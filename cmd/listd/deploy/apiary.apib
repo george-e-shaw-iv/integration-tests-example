@@ -10,7 +10,93 @@ said lists.
 
 ### Get All Lists [GET]
 
++ Response 200 (application/json)
+
+    + Body
+
+        [
+            {
+                "id": 0,
+                "name": "Grocery List",
+                "created": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001",
+                "modified": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001"
+            }
+        ]
+
++ Response 204
+
++ Response 500 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Internal Server Error"
+                }
+            ]
+        }
+
 ### Create List [POST]
+
++ Request (application/json)
+
+    + Body
+
+        {
+            "name": "Grocery List"
+        }
+
++ Response 201 (application/json)
+
+    + Body
+
+        {
+            "id": 0,
+            "name": "Grocery List",
+            "created": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001",
+            "modified": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001"
+        }
+
++ Response 400 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Name is a required field"
+                }
+            ]
+        }
+
++ Response 400 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Name must be unique"
+                }
+            ]
+        }
+
++ Response 500 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Internal Server Error"
+                }
+            ]
+        }
 
 ## List [/list/:lid]
 
@@ -19,9 +105,148 @@ said lists.
 
 ### Get List [GET]
 
++ Response 200 (application/json)
+
+    + Body
+
+        {
+            "id": 0,
+            "name": "Grocery List",
+            "created": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001",
+            "modified": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001"
+        }
+
++ Response 404 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Not Found"
+                }
+            ]
+        }
+
++ Response 500 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Internal Server Error"
+                }
+            ]
+        }
+
 ### Update List [PUT]
 
++ Request (application/json)
+
+    + Body
+
+        {
+            "id": 0,
+            "name": "Grocery List",
+            "created": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001",
+            "modified": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001"
+        }
+
++ Response 200 (application/json)
+
+    + Body
+
+        {
+            "id": 0,
+            "name": "Grocery List",
+            "created": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001",
+            "modified": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001"
+        }
+
++ Response 400 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Name is a required field"
+                }
+            ]
+        }
+
++ Response 400 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Name must be unique"
+                }
+            ]
+        }
+
++ Response 404 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Not Found"
+                }
+            ]
+        }
+
++ Response 500 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Internal Server Error"
+                }
+            ]
+        }
+
 ### Delete List [DELETE]
+
++ Response 204
+
++ Response 404 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Not Found"
+                }
+            ]
+        }
+
++ Response 500 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Internal Server Error"
+                }
+            ]
+        }
 
 ## Items [/list/:lid/item]
 
@@ -30,7 +255,119 @@ said lists.
 
 ### Get All Items in List [GET]
 
++ Response 200 (application/json)
+
+    + Body
+
+        [
+            {
+                "id": 0,
+                "listID": 0,
+                "name": "Chocolate Milk"
+                "quantity": 1,
+                "created": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001",
+                "modified": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001"
+            },
+            {
+                "id": 1,
+                "listID": 0,
+                "name": "Mac and Cheese"
+                "quantity": 2,
+                "created": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001",
+                "modified": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001"
+            }
+        ]
+
++ Response 204
+
++ Response 500 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Internal Server Error"
+                }
+            ]
+        }
+
 ### Create Item in List [POST]
+
++ Request (application/json)
+
+    + Body
+
+        {
+            "name": "Chocolate Milk",
+            "quantity": 1
+        }
+
++ Response 201 (application/json)
+
+    + Body
+
+        {
+            "id": 0,
+            "listID": 0,
+            "name": "Chocolate Milk"
+            "quantity": 1,
+            "created": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001",
+            "modified": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001"
+        }
+
++ Response 400 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Name is required"
+                }
+            ]
+        }
+
++ Response 400 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Name must be unique"
+                }
+            ]
+        }
+
++ Response 400 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Quantity must be greater than 0"
+                }
+            ]
+        }
+
++ Response 500 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Internal Server Error"
+                }
+            ]
+        }
 
 ## Item [/list/:lid/item/:iid]
 
@@ -40,6 +377,160 @@ said lists.
 
 ### Get Item [GET]
 
++ Response 200 (application/json)
+
+    + Body
+
+        {
+            "id": 0,
+            "listID": 0,
+            "name": "Chocolate Milk"
+            "quantity": 1,
+            "created": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001",
+            "modified": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001"
+        }
+
++ Response 404 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Not Found"
+                }
+            ]
+        }
+
++ Response 500 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Internal Server Error"
+                }
+            ]
+        }
+
 ### Update Item [PUT]
 
++ Request (application/json)
+
+    + Body
+
+        {
+            "name": "Chocolate Milk",
+            "quantity": 1
+        }
+
++ Response 200 (application/json)
+
+    + Body
+
+        {
+            "id": 0,
+            "listID": 0,
+            "name": "Chocolate Milk"
+            "quantity": 1,
+            "created": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001",
+            "modified": "2009-11-10 23:00:00 +0000 UTC m=+0.000000001"
+        }
+
++ Response 400 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Name is required"
+                }
+            ]
+        }
+
++ Response 400 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Name must be unique"
+                }
+            ]
+        }
+
++ Response 400 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Quantity must be greater than 0"
+                }
+            ]
+        }
+
++ Response 404 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Not Found"
+                }
+            ]
+        }
+
++ Response 500 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Internal Server Error"
+                }
+            ]
+        }
+
 ### Delete Item [DELETE]
+
++ Response 204
+
++ Response 404 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Not Found"
+                }
+            ]
+        }
+
++ Response 500 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Internal Server Error"
+                }
+            ]
+        }
