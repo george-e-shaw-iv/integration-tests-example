@@ -105,8 +105,7 @@ func (a *Application) updateList(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	l, err := list.CreateList(a.db, payload)
-	if err != nil {
+	if err := list.UpdateList(a.db, payload); err != nil {
 		if pgerr, ok := err.(*pq.Error); ok {
 			if string(pgerr.Code) == db.PSQLErrUniqueConstraint {
 				web.RespondError(w, r, http.StatusBadRequest, errors.Wrap(err, "attempting to break unique name constraint"))
@@ -118,7 +117,7 @@ func (a *Application) updateList(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	web.Respond(w, r, http.StatusOK, l)
+	web.Respond(w, r, http.StatusOK, payload)
 }
 
 // deleteList is a handler that deletes a row from the list table using a given

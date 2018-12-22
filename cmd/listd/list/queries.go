@@ -12,7 +12,7 @@ const (
 	insert = "INSERT INTO list (name, created, modified) VALUES ($1, $2, $3);"
 
 	// update is a query that updates a row based off of list_id
-	update = "UPDATE list SET name = $1 AND modified = $2 WHERE list_id = $3;"
+	update = "UPDATE list SET name = $1, modified = $2 WHERE list_id = $3;"
 
 	delete = "DELETE FROM list WHERE list_id = $1;"
 )

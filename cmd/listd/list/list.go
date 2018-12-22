@@ -9,7 +9,7 @@ import (
 )
 
 // Record is a type that contains the proper struct tags for both
-// a JSON and Postgres representation of a list.
+// a JSON and Postgres representation of a list
 type Record struct {
 	ID       int       `json:"id" db:"list_id"`
 	Name     string    `json:"name" db:"name"`
@@ -70,7 +70,7 @@ func CreateList(dbc *sqlx.DB, r Record) (Record, error) {
 }
 
 // UpdateList updates a row in the list table based off of a list_id. The only field
-// able to be updated is the name field.
+// able to be updated is the name field
 func UpdateList(dbc *sqlx.DB, r Record) error {
 	r.Modified = time.Now()
 

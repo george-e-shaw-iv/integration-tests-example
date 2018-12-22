@@ -1,0 +1,45 @@
+FORMAT: 1A
+HOST: http://localhost:3000
+
+# List Daemon
+
+The Prometheus Agent Daemon acts as an API to handle requests related to lists and items on
+said lists.
+
+## Lists [/list]
+
+### Get All Lists [GET]
+
+### Create List [POST]
+
+## List [/list/:lid]
+
++ Parameters
+    + lid (required, integer) - List ID
+
+### Get List [GET]
+
+### Update List [PUT]
+
+### Delete List [DELETE]
+
+## Items [/list/:lid/item]
+
++ Parameters
+    + lid (required, integer) - List ID
+
+### Get All Items in List [GET]
+
+### Create Item in List [POST]
+
+## Item [/list/:lid/item/:iid]
+
++ Parameters
+    + lid (required, integer) - List ID
+    + iid (required, integer) - Item ID
+
+### Get Item [GET]
+
+### Update Item [PUT]
+
+### Delete Item [DELETE]
