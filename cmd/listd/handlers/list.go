@@ -45,7 +45,7 @@ func (a *Application) createList(w http.ResponseWriter, r *http.Request, _ httpr
 
 	l, err := list.CreateList(a.db, payload)
 	if err != nil {
-		if pgerr, ok := err.(*pq.Error); ok {
+		if pgerr, ok := errors.Cause(err).(*pq.Error); ok {
 			if string(pgerr.Code) == db.PSQLErrUniqueConstraint {
 				web.RespondError(w, r, http.StatusBadRequest, errors.Wrap(err, "attempting to break unique name constraint"))
 				return
@@ -70,7 +70,7 @@ func (a *Application) getList(w http.ResponseWriter, r *http.Request, ps httprou
 
 	l, err := list.SelectList(a.db, list.FilterByID, listID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
 			return
 		}
@@ -106,7 +106,7 @@ func (a *Application) updateList(w http.ResponseWriter, r *http.Request, ps http
 	}
 
 	if err := list.UpdateList(a.db, payload); err != nil {
-		if pgerr, ok := err.(*pq.Error); ok {
+		if pgerr, ok := errors.Cause(err).(*pq.Error); ok {
 			if string(pgerr.Code) == db.PSQLErrUniqueConstraint {
 				web.RespondError(w, r, http.StatusBadRequest, errors.Wrap(err, "attempting to break unique name constraint"))
 				return
@@ -130,7 +130,7 @@ func (a *Application) deleteList(w http.ResponseWriter, r *http.Request, ps http
 	}
 
 	if err := list.DeleteList(a.db, listID); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
 			return
 		}

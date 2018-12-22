@@ -58,14 +58,14 @@ func (a *Application) createItem(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	if payload.Quantity > 0 {
+	if payload.Quantity <= 0 {
 		web.RespondError(w, r, http.StatusBadRequest, errors.New("quantity must be supplied and greater than 0"))
 		return
 	}
 
 	i, err := item.CreateItem(a.db, payload)
 	if err != nil {
-		if pgerr, ok := err.(*pq.Error); ok {
+		if pgerr, ok := errors.Cause(err).(*pq.Error); ok {
 			if string(pgerr.Code) == db.PSQLErrUniqueConstraint {
 				web.RespondError(w, r, http.StatusBadRequest, errors.Wrap(err, "attempting to break unique name constraint"))
 				return
@@ -96,7 +96,7 @@ func (a *Application) getItem(w http.ResponseWriter, r *http.Request, ps httprou
 
 	i, err := item.SelectItem(a.db, item.FilterByIDAndListID, itemID, listID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
 			return
 		}
@@ -138,13 +138,13 @@ func (a *Application) updateItem(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	if payload.Quantity > 0 {
+	if payload.Quantity <= 0 {
 		web.RespondError(w, r, http.StatusBadRequest, errors.New("quantity must be supplied and greater than 0"))
 		return
 	}
 
 	if err = item.UpdateItem(a.db, payload); err != nil {
-		if pgerr, ok := err.(*pq.Error); ok {
+		if pgerr, ok := errors.Cause(err).(*pq.Error); ok {
 			if string(pgerr.Code) == db.PSQLErrUniqueConstraint {
 				web.RespondError(w, r, http.StatusBadRequest, errors.Wrap(err, "attempting to break unique name constraint"))
 				return
@@ -155,7 +155,7 @@ func (a *Application) updateItem(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	web.Respond(w, r, http.StatusCreated, payload)
+	web.Respond(w, r, http.StatusOK, payload)
 }
 
 // getItem is a handler that deletes a row from the item table based off of the lid and iid URL
@@ -168,7 +168,7 @@ func (a *Application) deleteItem(w http.ResponseWriter, r *http.Request, ps http
 	}
 
 	if err = item.DeleteItem(a.db, itemID); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
 			return
 		}

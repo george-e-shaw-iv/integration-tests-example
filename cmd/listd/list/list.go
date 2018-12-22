@@ -43,7 +43,15 @@ func SelectList(dbc *sqlx.DB, filter string, args ...interface{}) (Record, error
 		return Record{}, db.ErrUnknownFilter
 	}
 
-	if err := dbc.Select(&list, stmt, args...); err != nil {
+	pStmt, err := dbc.Preparex(stmt)
+	if err != nil {
+		return Record{}, errors.Wrap(err, "prepare select query")
+	}
+	defer pStmt.Close()
+
+	row := pStmt.QueryRowx(args...)
+
+	if err := row.StructScan(&list); err != nil {
 		return Record{}, errors.Wrap(err, "select singular row from list table")
 	}
 
@@ -55,16 +63,17 @@ func CreateList(dbc *sqlx.DB, r Record) (Record, error) {
 	r.Created = time.Now()
 	r.Modified = time.Now()
 
-	res, err := dbc.Exec(insert, r.Name, r.Created, r.Modified)
+	stmt, err := dbc.Prepare(insert)
 	if err != nil {
 		return Record{}, errors.Wrap(err, "insert new list row")
 	}
+	defer stmt.Close()
 
-	id, err := res.LastInsertId()
-	if err != nil {
+	row := stmt.QueryRow(r.Name, r.Created, r.Modified)
+
+	if err = row.Scan(&r.ID); err != nil {
 		return Record{}, errors.Wrap(err, "get inserted row id")
 	}
-	r.ID = int(id)
 
 	return r, nil
 }
@@ -83,7 +92,7 @@ func UpdateList(dbc *sqlx.DB, r Record) error {
 
 // DeleteList deletes a row in the list table based off of list_id
 func DeleteList(dbc *sqlx.DB, id int) error {
-	if _, err := dbc.Exec(delete, id); err != nil {
+	if _, err := dbc.Exec(del, id); err != nil {
 		return errors.Wrap(err, "delete list row")
 	}
 

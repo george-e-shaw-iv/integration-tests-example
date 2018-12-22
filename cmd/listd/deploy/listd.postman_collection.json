@@ -1,0 +1,283 @@
+{
+	"info": {
+		"_postman_id": "aad8f874-245e-4338-a45f-a681f6862f4e",
+		"name": "listd",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List Routes",
+			"item": [
+				{
+					"name": "Get All Lists",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:3000/list",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:3000/list/1",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"list",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create New List",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Grocery\"\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/list",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update List",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Foo\"\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/list/1",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"list",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete List",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:3000/list/1",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"list",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Item Routes",
+			"item": [
+				{
+					"name": "Get All Items in List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:3000/list/1/item",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"list",
+								"1",
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Item in List",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Chocolate Milk\",\n\t\"quantity\": 1\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/list/1/item",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"list",
+								"1",
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Item in List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:3000/list/1/item/1",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"list",
+								"1",
+								"item",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Item in List",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Mac and Cheese\",\n\t\"quantity\": 2\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/list/1/item/1",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"list",
+								"1",
+								"item",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete item in List",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:3000/list/1/item/1",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"list",
+								"1",
+								"item",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
