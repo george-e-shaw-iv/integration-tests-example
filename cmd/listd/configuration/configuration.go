@@ -23,6 +23,7 @@ type Config struct {
 	DBPass string
 	DBName string
 	DBHost string
+	DBPort int
 
 	ReadTimeout     time.Duration
 	WriteTimeout    time.Duration
@@ -55,6 +56,10 @@ func Environment() (*Config, error) {
 
 	if c.DBHost = os.Getenv(EnvDBHost); c.DBHost == "" {
 		c.DBHost = DefaultDBHost
+	}
+
+	if c.DBPort, err = envInt(EnvDBPort, DefaultDBPort); err != nil {
+		return nil, errors.Wrap(err, "get postgres port")
 	}
 
 	var second int

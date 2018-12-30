@@ -25,7 +25,8 @@ var (
 
 // NewConnection returns a new database connection with the schema applied
 func NewConnection(cfg *configuration.Config) (*sqlx.DB, error) {
-	conn := fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable", cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost)
+	conn := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%d sslmode=disable",
+		cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost, cfg.DBPort)
 
 	db, err := sqlx.Connect("postgres", conn)
 	if err != nil {

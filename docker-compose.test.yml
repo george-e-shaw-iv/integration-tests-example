@@ -1,0 +1,29 @@
+version: '3'
+
+networks:
+  integration-tests-example-test:
+    driver: bridge
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: ./cmd/listd/deploy/Dockerfile.test
+    command: go test ./...
+    depends_on:
+      - db
+    networks:
+      - integration-tests-example-test
+  db:
+    image: postgres:11.1
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: testdb
+    restart: on-failure
+    networks:
+      - integration-tests-example-test

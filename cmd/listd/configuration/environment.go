@@ -26,6 +26,11 @@ const (
 	EnvDBHost     = "DB_HOST"
 	DefaultDBHost = "db"
 
+	// EnvDBPort is the name of the environment variable that stores the postgres
+	// database port number
+	EnvDBPort     = "DB_PORT"
+	DefaultDBPort = 5432
+
 	// EnvReadTimeout is the name of the environment variable that stores the
 	// time in seconds for the timeout of reading actions for the server
 	EnvReadTimeout     = "READ_TIMEOUT"
