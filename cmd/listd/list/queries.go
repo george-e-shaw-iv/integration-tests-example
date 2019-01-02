@@ -14,6 +14,9 @@ const (
 	// update is a query that updates a row based off of list_id
 	update = "UPDATE list SET name = $1, modified = $2 WHERE list_id = $3;"
 
+	// delRelatedItems deletes the items that are related to a list by id
+	delRelatedItems = "DELETE FROM item WHERE list_id = $1"
+
 	// del is a query that deletes a row in the list table
 	del = "DELETE FROM list WHERE list_id = $1;"
 )

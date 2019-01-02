@@ -1,6 +1,7 @@
 package list
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/db"
@@ -92,6 +93,14 @@ func UpdateList(dbc *sqlx.DB, r Record) error {
 
 // DeleteList deletes a row in the list table based off of list_id
 func DeleteList(dbc *sqlx.DB, id int) error {
+	if _, err := SelectList(dbc, FilterByID, id); errors.Cause(err) == sql.ErrNoRows {
+		return sql.ErrNoRows
+	}
+
+	if _, err := dbc.Exec(delRelatedItems, id); err != nil && errors.Cause(err) != sql.ErrNoRows {
+		return errors.Wrap(err, "deleted related items to given list_id")
+	}
+
 	if _, err := dbc.Exec(del, id); err != nil {
 		return errors.Wrap(err, "delete list row")
 	}

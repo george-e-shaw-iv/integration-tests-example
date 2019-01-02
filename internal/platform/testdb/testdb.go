@@ -7,6 +7,7 @@ import (
 	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/list"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // DatabaseName is the name of the database that gets used during testing
@@ -77,7 +78,15 @@ func seedLists(dbc *sqlx.DB, t time.Time) error {
 		row := stmt.QueryRow(l.Name, l.Created, l.Modified)
 
 		if err = row.Scan(&SeedLists[k].ID); err != nil {
+			if err := stmt.Close(); err != nil {
+				logrus.WithField("err", err).Error("close psql statement")
+			}
+
 			return errors.Wrap(err, "capture list id for seeded list")
+		}
+
+		if err := stmt.Close(); err != nil {
+			logrus.WithField("err", err).Error("close psql statement")
 		}
 	}
 
@@ -123,7 +132,15 @@ func seedItems(dbc *sqlx.DB, t time.Time) error {
 		row := stmt.QueryRow(i.ListID, i.Name, i.Quantity, i.Created, i.Modified)
 
 		if err = row.Scan(&SeedItems[k].ID); err != nil {
+			if err := stmt.Close(); err != nil {
+				logrus.WithField("err", err).Error("close psql statement")
+			}
+
 			return errors.Wrap(err, "capture item id for seeded item")
+		}
+
+		if err := stmt.Close(); err != nil {
+			logrus.WithField("err", err).Error("close psql statement")
 		}
 	}
 
