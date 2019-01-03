@@ -72,6 +72,10 @@ func CreateItem(dbc *sqlx.DB, r Record) (Record, error) {
 	r.Created = time.Now()
 	r.Modified = time.Now()
 
+	if _, err := list.SelectList(dbc, list.FilterByID, r.ListID); errors.Cause(err) == sql.ErrNoRows {
+		return Record{}, sql.ErrNoRows
+	}
+
 	stmt, err := dbc.Prepare(insert)
 	if err != nil {
 		return Record{}, errors.Wrap(err, "insert new item row")

@@ -115,6 +115,15 @@ func Test_createItem(t *testing.T) {
 			},
 			ExpectedCode: http.StatusBadRequest,
 		},
+		{
+			Name:   "NotFoundList",
+			ListID: 0, // postgres serial starts at 1, 0 will never exist
+			RequestBody: item.Record{
+				Name:     "Bar",
+				Quantity: 1,
+			},
+			ExpectedCode: http.StatusNotFound,
+		},
 	}
 
 	for _, test := range tests {
@@ -137,7 +146,7 @@ func Test_createItem(t *testing.T) {
 				t.Errorf("expected status code: %v, got status code: %v", e, a)
 			}
 
-			if test.ExpectedCode != http.StatusBadRequest {
+			if test.ExpectedCode == http.StatusCreated {
 				var i item.Record
 				resp := web.Response{
 					Results: &i,

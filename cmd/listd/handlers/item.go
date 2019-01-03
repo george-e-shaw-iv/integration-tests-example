@@ -67,6 +67,11 @@ func (a *Application) createItem(w http.ResponseWriter, r *http.Request, ps http
 
 	i, err := item.CreateItem(a.db, payload)
 	if err != nil {
+		if errors.Cause(err) == sql.ErrNoRows {
+			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
+			return
+		}
+
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "insert row into item table"))
 		return
 	}
