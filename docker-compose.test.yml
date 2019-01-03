@@ -11,10 +11,10 @@ services:
       dockerfile: ./cmd/listd/deploy/Dockerfile.test
     command: go test ./...
     depends_on:
-      - db
+      - testdb
     networks:
       - integration-tests-example-test
-  db:
+  testdb:
     image: postgres:11.1
     ports:
       - "5432:5432"

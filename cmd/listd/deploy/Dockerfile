@@ -1,8 +1,17 @@
-FROM golang:1.11
+FROM golang:1.11 AS src
 
 # Copy Repository
 WORKDIR /integration-tests-example/
 COPY . ./
+
+# Build Go Binary
+RUN set -ex; \
+    GO111MODULE=on go get ./...; \
+    GO111MODULE=on go build ./...; \
+    CGO_ENABLED=0 GOOS=linux go build -o ./listd ./cmd/listd;
+
+# Final image, no source code
+FROM debian:jessie-slim
 
 # Install Root Ceritifcates
 RUN set -ex; \
@@ -10,11 +19,8 @@ RUN set -ex; \
     apt-get install -y --no-install-recommends \
         ca-certificates;
 
-# Build Go Binary
-RUN set -ex; \
-    GO111MODULE=on go get ./...; \
-    GO111MODULE=on go build ./...; \
-    CGO_ENABLED=0 GOOS=linux go build -o /opt/listd ./cmd/listd;
+WORKDIR /opt/
+COPY --from=src /integration-tests-example/listd .
 
 # Run Go Binary
 CMD /opt/listd

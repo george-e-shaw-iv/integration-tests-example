@@ -4,10 +4,10 @@ up:
 	docker-compose -f ./docker-compose.yml up --build
 
 stop:
-	docker-compose stop
+	docker-compose -f ./docker-compose.yml stop
 
 down:
-	docker-compose down
+	docker-compose -f ./docker-compose.yml down
 
 test:
 	docker-compose -f ./docker-compose.test.yml up --build

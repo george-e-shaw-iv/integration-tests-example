@@ -47,7 +47,7 @@ func TestMain(m *testing.M) {
 		DBUser: configuration.DefaultDBUser,
 		DBPass: configuration.DefaultDBPass,
 		DBName: testdb.DatabaseName,
-		DBHost: configuration.DefaultDBHost,
+		DBHost: testdb.DatabaseHost,
 		DBPort: configuration.DefaultDBPort,
 	})
 	if err != nil {
