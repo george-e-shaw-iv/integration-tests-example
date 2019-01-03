@@ -74,6 +74,11 @@ func seedLists(dbc *sqlx.DB, t time.Time) error {
 			Created:  t,
 			Modified: t,
 		},
+		{
+			Name:     "Employees",
+			Created:  t,
+			Modified: t,
+		},
 	}
 
 	for k, l := range SeedLists {

@@ -1,3 +1,6 @@
 # IDE and System Generated Files
 .idea/
 .DS_Store
+
+# Vendored Dependencies
+vendor/

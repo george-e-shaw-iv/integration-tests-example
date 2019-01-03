@@ -91,14 +91,13 @@ func (a *Application) updateList(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	payload := list.Record{
-		ID: listID,
-	}
-
+	var payload list.Record
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "unmarshal request payload"))
 		return
 	}
+
+	payload.ID = listID
 
 	if payload.Name == "" {
 		web.RespondError(w, r, http.StatusBadRequest, errors.New("name key is required"))

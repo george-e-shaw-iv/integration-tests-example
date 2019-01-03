@@ -252,6 +252,8 @@ said lists.
 
 ### Get All Items in List [GET]
 
+This route can return 404 when the list does not exist.
+
 + Response 200 (application/json)
 
     + Body
@@ -276,6 +278,19 @@ said lists.
         ]
 
 + Response 204
+
++ Response 404 (application/json)
+
+    + Body
+
+        {
+            "results": null,
+            "errors": [
+                {
+                    "message": "Not Found"
+                }
+            ]
+        }
 
 + Response 500 (application/json)
 
@@ -323,19 +338,6 @@ said lists.
             "errors": [
                 {
                     "message": "Name is required"
-                }
-            ]
-        }
-
-+ Response 400 (application/json)
-
-    + Body
-
-        {
-            "results": null,
-            "errors": [
-                {
-                    "message": "Name must be unique"
                 }
             ]
         }
@@ -446,19 +448,6 @@ said lists.
             "errors": [
                 {
                     "message": "Name is required"
-                }
-            ]
-        }
-
-+ Response 400 (application/json)
-
-    + Body
-
-        {
-            "results": null,
-            "errors": [
-                {
-                    "message": "Name must be unique"
                 }
             ]
         }

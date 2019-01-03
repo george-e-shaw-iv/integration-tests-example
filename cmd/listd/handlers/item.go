@@ -7,10 +7,8 @@ import (
 	"strconv"
 
 	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/item"
-	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/db"
 	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/web"
 	"github.com/julienschmidt/httprouter"
-	"github.com/lib/pq"
 	"github.com/pkg/errors"
 )
 
@@ -24,6 +22,11 @@ func (a *Application) getItems(w http.ResponseWriter, r *http.Request, ps httpro
 
 	items, err := item.SelectItems(a.db, listID)
 	if err != nil {
+		if errors.Cause(err) == sql.ErrNoRows {
+			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
+			return
+		}
+
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "select all item rows"))
 		return
 	}
@@ -44,14 +47,13 @@ func (a *Application) createItem(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	payload := item.Record{
-		ListID: listID,
-	}
-
+	var payload item.Record
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "unmarshal request payload"))
 		return
 	}
+
+	payload.ListID = listID
 
 	if payload.Name == "" {
 		web.RespondError(w, r, http.StatusBadRequest, errors.New("name is a required field"))
@@ -65,13 +67,6 @@ func (a *Application) createItem(w http.ResponseWriter, r *http.Request, ps http
 
 	i, err := item.CreateItem(a.db, payload)
 	if err != nil {
-		if pgerr, ok := errors.Cause(err).(*pq.Error); ok {
-			if string(pgerr.Code) == db.PSQLErrUniqueConstraint {
-				web.RespondError(w, r, http.StatusBadRequest, errors.Wrap(err, "attempting to break unique name constraint"))
-				return
-			}
-		}
-
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "insert row into item table"))
 		return
 	}
@@ -123,15 +118,14 @@ func (a *Application) updateItem(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	payload := item.Record{
-		ID:     itemID,
-		ListID: listID,
-	}
-
+	var payload item.Record
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "unmarshal request payload"))
 		return
 	}
+
+	payload.ID = itemID
+	payload.ListID = listID
 
 	if payload.Name == "" {
 		web.RespondError(w, r, http.StatusBadRequest, errors.New("name is a required field"))
@@ -144,11 +138,9 @@ func (a *Application) updateItem(w http.ResponseWriter, r *http.Request, ps http
 	}
 
 	if err = item.UpdateItem(a.db, payload); err != nil {
-		if pgerr, ok := errors.Cause(err).(*pq.Error); ok {
-			if string(pgerr.Code) == db.PSQLErrUniqueConstraint {
-				web.RespondError(w, r, http.StatusBadRequest, errors.Wrap(err, "attempting to break unique name constraint"))
-				return
-			}
+		if errors.Cause(err) == sql.ErrNoRows {
+			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
+			return
 		}
 
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "update row in item table"))
@@ -161,13 +153,19 @@ func (a *Application) updateItem(w http.ResponseWriter, r *http.Request, ps http
 // getItem is a handler that deletes a row from the item table based off of the lid and iid URL
 // parameters
 func (a *Application) deleteItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	listID, err := strconv.Atoi(ps.ByName("lid"))
+	if err != nil {
+		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert list id to integer"))
+		return
+	}
+
 	itemID, err := strconv.Atoi(ps.ByName("iid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert item id to integer"))
 		return
 	}
 
-	if err = item.DeleteItem(a.db, itemID); err != nil {
+	if err = item.DeleteItem(a.db, itemID, listID); err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
 			return

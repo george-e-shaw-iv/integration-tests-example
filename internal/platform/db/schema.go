@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS list (
 CREATE TABLE IF NOT EXISTS item (
 	item_id SERIAL PRIMARY KEY,
 	list_id int NOT NULL,
-	name varchar(255) NOT NULL UNIQUE,
+	name varchar(255) NOT NULL,
 	quantity int NOT NULL,
 	created timestamp NOT NULL DEFAULT NOW(),
 	modified timestamp NOT NULL DEFAULT NOW(),

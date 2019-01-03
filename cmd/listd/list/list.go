@@ -82,6 +82,10 @@ func CreateList(dbc *sqlx.DB, r Record) (Record, error) {
 // UpdateList updates a row in the list table based off of a list_id. The only field
 // able to be updated is the name field
 func UpdateList(dbc *sqlx.DB, r Record) error {
+	if _, err := SelectList(dbc, FilterByID, r.ID); errors.Cause(err) == sql.ErrNoRows {
+		return sql.ErrNoRows
+	}
+
 	r.Modified = time.Now()
 
 	if _, err := dbc.Exec(update, r.Name, r.Modified, r.ID); err != nil {

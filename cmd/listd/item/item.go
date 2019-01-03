@@ -1,7 +1,10 @@
 package item
 
 import (
+	"database/sql"
 	"time"
+
+	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/list"
 
 	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/db"
 	"github.com/jmoiron/sqlx"
@@ -21,6 +24,10 @@ type Record struct {
 
 // SelectItems selects all appropriate rows from the item table given a list_id
 func SelectItems(dbc *sqlx.DB, listID int) ([]Record, error) {
+	if _, err := list.SelectList(dbc, list.FilterByID, listID); errors.Cause(err) == sql.ErrNoRows {
+		return nil, sql.ErrNoRows
+	}
+
 	items := make([]Record, 0)
 
 	if err := dbc.Select(&items, selectAll, listID); err != nil {
@@ -80,12 +87,16 @@ func CreateItem(dbc *sqlx.DB, r Record) (Record, error) {
 	return r, nil
 }
 
-// UpdateItem updates a row in the item table based off of a item_id. The only fields
+// UpdateItem updates a row in the item table based off of item_id and list_id. The only fields
 // able to be updated are the name and quantity field
 func UpdateItem(dbc *sqlx.DB, r Record) error {
+	if _, err := SelectItem(dbc, FilterByIDAndListID, r.ID, r.ListID); errors.Cause(err) == sql.ErrNoRows {
+		return sql.ErrNoRows
+	}
+
 	r.Modified = time.Now()
 
-	if _, err := dbc.Exec(update, r.Name, r.Quantity, r.Modified, r.ID); err != nil {
+	if _, err := dbc.Exec(update, r.Name, r.Quantity, r.Modified, r.ID, r.ListID); err != nil {
 		return errors.Wrap(err, "update item row")
 	}
 
@@ -93,8 +104,12 @@ func UpdateItem(dbc *sqlx.DB, r Record) error {
 }
 
 // DeleteItem deletes a row in the item table based off of item_id
-func DeleteItem(dbc *sqlx.DB, id int) error {
-	if _, err := dbc.Exec(del, id); err != nil {
+func DeleteItem(dbc *sqlx.DB, itemID, listID int) error {
+	if _, err := SelectItem(dbc, FilterByIDAndListID, itemID, listID); errors.Cause(err) == sql.ErrNoRows {
+		return sql.ErrNoRows
+	}
+
+	if _, err := dbc.Exec(del, itemID); err != nil {
 		return errors.Wrap(err, "delete list row")
 	}
 
