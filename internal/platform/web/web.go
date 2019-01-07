@@ -8,9 +8,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// ErrInternalServer is a generic internal server error.
-var ErrInternalServer = errors.New("internal server error")
-
 // Response is the format used for all the responses.
 type Response struct {
 	Results interface{}     `json:"results"`
@@ -22,7 +19,7 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
-// Error implements the error interface
+// Error implements the error interface.
 func (a ResponseError) Error() string {
 	return a.Message
 }
@@ -61,7 +58,7 @@ func RespondError(w http.ResponseWriter, r *http.Request, code int, err error) {
 		// Respond with generic error. Error messages and and codes may potentially contain
 		// sensitive information or help an attacker.
 		code = http.StatusInternalServerError
-		//err = ErrInternalServer
+		err = errors.New(http.StatusText(http.StatusInternalServerError))
 	}
 
 	resp := Response{
@@ -91,5 +88,8 @@ func writeResponse(w http.ResponseWriter, r *http.Request, code int, resp *Respo
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	w.Write(b)
+
+	if _, err := w.Write(b); err != nil {
+		log.WithError(errors.Wrap(err, "write response body"))
+	}
 }

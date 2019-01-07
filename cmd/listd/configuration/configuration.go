@@ -10,12 +10,12 @@ import (
 
 var (
 	// ErrEnvNoDefault is an error that denotes an environment variable was not supplied
-	// that has no default value
+	// that has no default value.
 	ErrEnvNoDefault = errors.New("env variable not supplied and has no default")
 )
 
-// Config is the struct that contains fields that store the necessary configuration
-// gathered from the environment
+// Config is the struct type that contains fields that stores the necessary configuration
+// gathered from the environment.
 type Config struct {
 	DaemonPort int
 
@@ -30,8 +30,8 @@ type Config struct {
 	ShutdownTimeout time.Duration
 }
 
-// Environment attempts to gather all of the environment variables from the context of where
-// the program is ran.
+// Environment attempts to gather all of the environment variables from the context of the
+// host.
 func Environment() (*Config, error) {
 	var (
 		c   Config

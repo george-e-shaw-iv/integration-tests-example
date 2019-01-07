@@ -16,12 +16,12 @@ import (
 
 func Test_getLists(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
-	// removes lists from the database
+	// removes lists from the database.
 	defer ts.reseedDatabase(t)
 
 	tests := []struct {
 		Name         string
-		ExpectedBody []list.Record
+		ExpectedBody []list.List
 		ExpectedCode int
 	}{
 		{
@@ -31,13 +31,14 @@ func Test_getLists(t *testing.T) {
 		},
 		{
 			Name:         "NoContent",
-			ExpectedBody: nil,
-			ExpectedCode: http.StatusNoContent,
+			ExpectedBody: []list.List{},
+			ExpectedCode: http.StatusOK,
 		},
 	}
 
 	for _, test := range tests {
-		if test.ExpectedBody == nil {
+		// NoConent test needs to have lists removed from the database to be tested.
+		if test.Name == tests[1].Name {
 			if err := testdb.Truncate(ts.a.db); err != nil {
 				t.Errorf("error encountered truncating database: %v", err)
 			}
@@ -56,19 +57,17 @@ func Test_getLists(t *testing.T) {
 				t.Errorf("expected status code: %v, got status code: %v", e, a)
 			}
 
-			if test.ExpectedCode != http.StatusNoContent {
-				var lists []list.Record
-				resp := web.Response{
-					Results: &lists,
-				}
+			var lists []list.List
+			resp := web.Response{
+				Results: &lists,
+			}
 
-				if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
-					t.Errorf("error decoding response body: %v", err)
-				}
+			if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+				t.Errorf("error decoding response body: %v", err)
+			}
 
-				if d := cmp.Diff(test.ExpectedBody, lists); d != "" {
-					t.Errorf("unexpected difference in response body:\n%v", d)
-				}
+			if d := cmp.Diff(test.ExpectedBody, lists); d != "" {
+				t.Errorf("unexpected difference in response body:\n%v", d)
 			}
 		}
 
@@ -78,31 +77,31 @@ func Test_getLists(t *testing.T) {
 
 func Test_createList(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
-	// adds lists to the database
+	// adds lists to the database.
 	defer ts.reseedDatabase(t)
 
 	tests := []struct {
 		Name         string
-		RequestBody  list.Record
+		RequestBody  list.List
 		ExpectedCode int
 	}{
 		{
 			Name: "OK",
-			RequestBody: list.Record{
+			RequestBody: list.List{
 				Name: "Foo",
 			},
 			ExpectedCode: http.StatusCreated,
 		},
 		{
 			Name: "BreakUniqueNameConstraint",
-			RequestBody: list.Record{
+			RequestBody: list.List{
 				Name: "Foo",
 			},
 			ExpectedCode: http.StatusBadRequest,
 		},
 		{
 			Name:         "NoName",
-			RequestBody:  list.Record{},
+			RequestBody:  list.List{},
 			ExpectedCode: http.StatusBadRequest,
 		},
 	}
@@ -118,7 +117,12 @@ func Test_createList(t *testing.T) {
 			if err != nil {
 				t.Errorf("error creating request: %v", err)
 			}
-			defer req.Body.Close()
+
+			defer func() {
+				if err := req.Body.Close(); err != nil {
+					t.Errorf("error encountered closing request body: %v", err)
+				}
+			}()
 
 			w := httptest.NewRecorder()
 			ts.a.ServeHTTP(w, req)
@@ -128,7 +132,7 @@ func Test_createList(t *testing.T) {
 			}
 
 			if test.ExpectedCode != http.StatusBadRequest {
-				var l list.Record
+				var l list.List
 				resp := web.Response{
 					Results: &l,
 				}
@@ -151,7 +155,7 @@ func Test_getList(t *testing.T) {
 	tests := []struct {
 		Name         string
 		ListID       int
-		ExpectedBody list.Record
+		ExpectedBody list.List
 		ExpectedCode int
 	}{
 		{
@@ -161,9 +165,10 @@ func Test_getList(t *testing.T) {
 			ExpectedCode: http.StatusOK,
 		},
 		{
-			Name:         "NotFound",
-			ListID:       0, // postgres serial starts at 1, 0 will never exist
-			ExpectedBody: list.Record{},
+			Name: "NotFound",
+			// Using 0 for ListID because postgres serial type starts at 1 so 0 will never exist.
+			ListID:       0,
+			ExpectedBody: list.List{},
 			ExpectedCode: http.StatusNotFound,
 		},
 	}
@@ -183,7 +188,7 @@ func Test_getList(t *testing.T) {
 			}
 
 			if test.ExpectedCode != http.StatusNotFound {
-				var l list.Record
+				var l list.List
 				resp := web.Response{
 					Results: &l,
 				}
@@ -204,19 +209,19 @@ func Test_getList(t *testing.T) {
 
 func Test_updateList(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
-	// changes lists in the database
+	// changes lists in the database.
 	defer ts.reseedDatabase(t)
 
 	tests := []struct {
 		Name         string
 		ListID       int
-		RequestBody  list.Record
+		RequestBody  list.List
 		ExpectedCode int
 	}{
 		{
 			Name:   "OK",
 			ListID: testdb.SeedLists[0].ID,
-			RequestBody: list.Record{
+			RequestBody: list.List{
 				Name: "Foo",
 			},
 			ExpectedCode: http.StatusOK,
@@ -224,7 +229,7 @@ func Test_updateList(t *testing.T) {
 		{
 			Name:   "BreakUniqueNameConstraint",
 			ListID: testdb.SeedLists[1].ID,
-			RequestBody: list.Record{
+			RequestBody: list.List{
 				Name: "Foo",
 			},
 			ExpectedCode: http.StatusBadRequest,
@@ -232,13 +237,14 @@ func Test_updateList(t *testing.T) {
 		{
 			Name:         "NoName",
 			ListID:       testdb.SeedLists[0].ID,
-			RequestBody:  list.Record{},
+			RequestBody:  list.List{},
 			ExpectedCode: http.StatusBadRequest,
 		},
 		{
-			Name:   "NotFound",
-			ListID: 0, // postgres serial starts at 1, 0 will never exist
-			RequestBody: list.Record{
+			Name: "NotFound",
+			// Using 0 for ListID because postgres serial type starts at 1 so 0 will never exist.
+			ListID: 0,
+			RequestBody: list.List{
 				Name: "Bar",
 			},
 			ExpectedCode: http.StatusNotFound,
@@ -256,7 +262,12 @@ func Test_updateList(t *testing.T) {
 			if err != nil {
 				t.Errorf("error creating request: %v", err)
 			}
-			defer req.Body.Close()
+
+			defer func() {
+				if err := req.Body.Close(); err != nil {
+					t.Errorf("error encountered closing request body: %v", err)
+				}
+			}()
 
 			w := httptest.NewRecorder()
 			ts.a.ServeHTTP(w, req)
@@ -266,7 +277,7 @@ func Test_updateList(t *testing.T) {
 			}
 
 			if test.ExpectedCode == http.StatusOK {
-				var l list.Record
+				var l list.List
 				resp := web.Response{
 					Results: &l,
 				}
@@ -287,7 +298,7 @@ func Test_updateList(t *testing.T) {
 
 func Test_deleteList(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
-	// deletes lists in the database
+	// deletes lists in the database.
 	defer ts.reseedDatabase(t)
 
 	tests := []struct {
@@ -301,8 +312,9 @@ func Test_deleteList(t *testing.T) {
 			ExpectedCode: http.StatusNoContent,
 		},
 		{
-			Name:         "NotFound",
-			ListID:       0, // postgres serial starts at 1, 0 will never exist
+			Name: "NotFound",
+			// Using 0 for ListID because postgres serial type starts at 1 so 0 will never exist.
+			ListID:       0,
 			ExpectedCode: http.StatusNotFound,
 		},
 	}

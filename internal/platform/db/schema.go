@@ -1,6 +1,7 @@
 package db
 
-// schema is the constant that contains the postgres database schema
+// schema is the constant that contains the postgres database schema for
+// the list daemon.
 const schema = `
 CREATE TABLE IF NOT EXISTS list (
 	list_id SERIAL PRIMARY KEY,

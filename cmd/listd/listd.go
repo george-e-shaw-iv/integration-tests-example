@@ -47,18 +47,19 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	// Starting the service, listening for requests.
+	// Start listening for requests made to the daemon and create a channel
+	// to collect non-HTTP related server errors on.
 	serverErrors := make(chan error, 1)
 	go func() {
 		log.Printf("server started, listening on %s", server.Addr)
 		serverErrors <- server.ListenAndServe()
 	}()
 
-	// Blocking main and waiting for shutdown.
+	// Blocking main and waiting for shutdown of the daemon.
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, os.Interrupt, syscall.SIGTERM)
 
-	// Wait for osSignal or error starting server
+	// Waiting for an osSignal or a non-HTTP related server error.
 	select {
 	case e := <-serverErrors:
 		mainErr = fmt.Errorf("server failed to start: %+v", e)
@@ -67,16 +68,14 @@ func main() {
 	case <-osSignals:
 	}
 
-	// Cleanup and Shutdown Server
+	// Clean-up integrated services and gracefully shutdown server.
 	if err := dbc.Close(); err != nil {
 		log.Printf("error closing database: %v", err)
 	}
 
-	// Create context for Shutdown call.
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancel()
 
-	// Asking listener to shutdown
 	if err := server.Shutdown(ctx); err != nil {
 		log.Printf("shutdown : Graceful shutdown did not complete in %v : %v", cfg.ShutdownTimeout, err)
 

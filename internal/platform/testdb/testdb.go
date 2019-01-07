@@ -23,15 +23,15 @@ const (
 )
 
 var (
-	// SeedLists contain seed data for lists
-	SeedLists []list.Record
+	// SeedLists contain seed data for the list table.
+	SeedLists []list.List
 
-	// SeedItems contain seed data for items
-	SeedItems []item.Record
+	// SeedItems contain seed data for the item table.
+	SeedItems []item.Item
 )
 
 // Seed handles seeding all necessary tables in the database in order to carry
-// out integration testing
+// out integration testing.
 func Seed(dbc *sqlx.DB) error {
 	if err := Truncate(dbc); err != nil {
 		return errors.Wrap(err, "truncate before seeding")
@@ -50,7 +50,7 @@ func Seed(dbc *sqlx.DB) error {
 	return nil
 }
 
-// Truncate removes all seed data from the test database
+// Truncate removes all seed data from the test database.
 func Truncate(dbc *sqlx.DB) error {
 	stmt := "TRUNCATE TABLE list CASCADE;"
 
@@ -61,9 +61,9 @@ func Truncate(dbc *sqlx.DB) error {
 	return nil
 }
 
-// seedItems handles seeding lists in the database for integration tests
+// seedItems handles seeding the list table in the database for integration tests.
 func seedLists(dbc *sqlx.DB, t time.Time) error {
-	SeedLists = []list.Record{
+	SeedLists = []list.List{
 		{
 			Name:     "Grocery",
 			Created:  t,
@@ -105,13 +105,13 @@ func seedLists(dbc *sqlx.DB, t time.Time) error {
 	return nil
 }
 
-// seedItems handles seeding items in the database for integration tests
+// seedItems handles seeding the item table in the database for integration tests.
 func seedItems(dbc *sqlx.DB, t time.Time) error {
 	if len(SeedLists) == 0 {
 		return errors.New("list data does not exist, necessary for item seeding")
 	}
 
-	SeedItems = []item.Record{
+	SeedItems = []item.Item{
 		{
 			ListID:   SeedLists[0].ID, // Grocery List
 			Name:     "Chocolate Milk",

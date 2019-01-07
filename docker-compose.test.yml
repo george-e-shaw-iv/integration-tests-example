@@ -9,7 +9,8 @@ services:
     build:
       context: .
       dockerfile: ./cmd/listd/deploy/Dockerfile.test
-    command: go test ./...
+    volumes:
+      - $GOPATH/pkg/mod/cache:/go/pkg/mod/cache
     depends_on:
       - testdb
     networks:

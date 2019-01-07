@@ -14,24 +14,24 @@ import (
 	"github.com/pkg/errors"
 )
 
-// getLists is a handler that retrieves all rows from the list table
+// getLists is a handler that retrieves all rows from the list table.
 func (a *Application) getLists(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	lists, err := list.SelectLists(a.db)
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "select all lists"))
+		return
 	}
 
 	if len(lists) == 0 {
-		web.Respond(w, r, http.StatusNoContent, nil)
-		return
+		lists = make([]list.List, 0)
 	}
 
 	web.Respond(w, r, http.StatusOK, lists)
 }
 
-// createList is a handler that inserts a new row into the list table
+// createList is a handler that inserts a new row into the list table.
 func (a *Application) createList(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var payload list.Record
+	var payload list.List
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "unmarshal request payload"))
@@ -60,7 +60,7 @@ func (a *Application) createList(w http.ResponseWriter, r *http.Request, _ httpr
 }
 
 // getList is a handler that gets a single row from the list table using a given
-// list id
+// list_id.
 func (a *Application) getList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	listID, err := strconv.Atoi(ps.ByName("lid"))
 	if err != nil {
@@ -68,7 +68,7 @@ func (a *Application) getList(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	l, err := list.SelectList(a.db, list.FilterByID, listID)
+	l, err := list.SelectList(a.db, listID)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
@@ -83,7 +83,7 @@ func (a *Application) getList(w http.ResponseWriter, r *http.Request, ps httprou
 }
 
 // updateList is a handler that updates a row from the list table using a given
-// list id
+// list_id.
 func (a *Application) updateList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	listID, err := strconv.Atoi(ps.ByName("lid"))
 	if err != nil {
@@ -91,7 +91,7 @@ func (a *Application) updateList(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	var payload list.Record
+	var payload list.List
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "unmarshal request payload"))
 		return
@@ -125,7 +125,7 @@ func (a *Application) updateList(w http.ResponseWriter, r *http.Request, ps http
 }
 
 // deleteList is a handler that deletes a row from the list table using a given
-// list id
+// list_id.
 func (a *Application) deleteList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	listID, err := strconv.Atoi(ps.ByName("lid"))
 	if err != nil {

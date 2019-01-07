@@ -9,6 +9,8 @@ services:
     build:
       context: .
       dockerfile: ./cmd/listd/deploy/Dockerfile
+    volumes:
+      - $GOPATH/pkg/mod/cache:/go/pkg/mod/cache
     ports:
       - "3000:3000"
     depends_on:

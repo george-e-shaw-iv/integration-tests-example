@@ -6,8 +6,6 @@ COPY . ./
 
 # Build Go Binary
 RUN set -ex; \
-    GO111MODULE=on go get ./...; \
-    GO111MODULE=on go build ./...; \
     CGO_ENABLED=0 GOOS=linux go build -o ./listd ./cmd/listd;
 
 # Final image, no source code

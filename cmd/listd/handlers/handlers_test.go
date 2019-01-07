@@ -12,7 +12,7 @@ import (
 )
 
 // testSuite is a struct type that contains necessary fields to carry out
-// tasks to fully test the handlers package along with it's integrations
+// tasks to fully test the handlers package along with it's integrations.
 type testSuite struct {
 	a *Application
 }
@@ -26,11 +26,11 @@ func (ts *testSuite) reseedDatabase(t *testing.T) {
 }
 
 // ts is the global variable that is of type testSuite which helps test the
-// entirety of the handlers package and it's integrations
+// entirety of the handlers package and it's integrations.
 var ts testSuite
 
 // TestMain handles the setup of the testSuite, runs all of the unit tests within
-// the handlers package, and cleans up afterward
+// the handlers package, and cleans up afterward.
 func TestMain(m *testing.M) {
 	var mainErr error
 	defer func() {
@@ -57,7 +57,9 @@ func TestMain(m *testing.M) {
 
 	ts.a = NewApplication(dbc, &configuration.Config{})
 
-	// Initial test seeding
+	// Initial seeding of the test database using test values defined within
+	// the testdb package. The testdb.Seed function also truncates all tables
+	// before seeding them.
 	if err := testdb.Seed(ts.a.db); err != nil {
 		mainErr = errors.Wrap(err, "seeding test database")
 		return
@@ -65,12 +67,12 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	// Clean-up
+	// Clean-up of the test database by closing it.
 	if err := dbc.Close(); err != nil {
 		log.Printf("error closing database connection: %v", err)
 	}
 
 	// m.Run() and os.Exit have to be separated between the clean up code
-	// because os.Exit does not respect deferred statements/functions.
+	// because os.Exit does not respect deferred statements and/or functions.
 	os.Exit(code)
 }

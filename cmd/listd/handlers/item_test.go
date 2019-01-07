@@ -18,13 +18,13 @@ func Test_getItems(t *testing.T) {
 	tests := []struct {
 		Name         string
 		ListID       int
-		ExpectedBody []item.Record
+		ExpectedBody []item.Item
 		ExpectedCode int
 	}{
 		{
 			Name:   "OK",
 			ListID: testdb.SeedLists[0].ID,
-			ExpectedBody: []item.Record{
+			ExpectedBody: []item.Item{
 				testdb.SeedItems[0],
 				testdb.SeedItems[1],
 			},
@@ -33,12 +33,13 @@ func Test_getItems(t *testing.T) {
 		{
 			Name:         "NoContent",
 			ListID:       testdb.SeedLists[2].ID,
-			ExpectedBody: nil,
-			ExpectedCode: http.StatusNoContent,
+			ExpectedBody: []item.Item{},
+			ExpectedCode: http.StatusOK,
 		},
 		{
-			Name:         "NotFound",
-			ListID:       0, // postgres serial starts at 1, 0 will never exist
+			Name: "NotFound",
+			// Using 0 for ListID because postgres serial type starts at 1 so 0 will never exist.
+			ListID:       0,
 			ExpectedBody: nil,
 			ExpectedCode: http.StatusNotFound,
 		},
@@ -59,7 +60,7 @@ func Test_getItems(t *testing.T) {
 			}
 
 			if test.ExpectedBody != nil {
-				var items []item.Record
+				var items []item.Item
 				resp := web.Response{
 					Results: &items,
 				}
@@ -80,19 +81,19 @@ func Test_getItems(t *testing.T) {
 
 func Test_createItem(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
-	// adds items to the database
+	// adds items to the database.
 	defer ts.reseedDatabase(t)
 
 	tests := []struct {
 		Name         string
 		ListID       int
-		RequestBody  item.Record
+		RequestBody  item.Item
 		ExpectedCode int
 	}{
 		{
 			Name:   "OK",
 			ListID: testdb.SeedLists[0].ID,
-			RequestBody: item.Record{
+			RequestBody: item.Item{
 				Name:     "Foo",
 				Quantity: 1,
 			},
@@ -101,7 +102,7 @@ func Test_createItem(t *testing.T) {
 		{
 			Name:   "NoName",
 			ListID: testdb.SeedLists[0].ID,
-			RequestBody: item.Record{
+			RequestBody: item.Item{
 				Quantity: 1,
 			},
 			ExpectedCode: http.StatusBadRequest,
@@ -109,16 +110,17 @@ func Test_createItem(t *testing.T) {
 		{
 			Name:   "LessThanOneQuantity",
 			ListID: testdb.SeedLists[0].ID,
-			RequestBody: item.Record{
+			RequestBody: item.Item{
 				Name:     "Bar",
 				Quantity: 0,
 			},
 			ExpectedCode: http.StatusBadRequest,
 		},
 		{
-			Name:   "NotFoundList",
-			ListID: 0, // postgres serial starts at 1, 0 will never exist
-			RequestBody: item.Record{
+			Name: "NotFoundList",
+			// Using 0 for ListID because postgres serial type starts at 1 so 0 will never exist.
+			ListID: 0,
+			RequestBody: item.Item{
 				Name:     "Bar",
 				Quantity: 1,
 			},
@@ -137,7 +139,12 @@ func Test_createItem(t *testing.T) {
 			if err != nil {
 				t.Errorf("error creating request: %v", err)
 			}
-			defer req.Body.Close()
+
+			defer func() {
+				if err := req.Body.Close(); err != nil {
+					t.Errorf("error encountered closing request body: %v", err)
+				}
+			}()
 
 			w := httptest.NewRecorder()
 			ts.a.ServeHTTP(w, req)
@@ -147,7 +154,7 @@ func Test_createItem(t *testing.T) {
 			}
 
 			if test.ExpectedCode == http.StatusCreated {
-				var i item.Record
+				var i item.Item
 				resp := web.Response{
 					Results: &i,
 				}
@@ -179,7 +186,7 @@ func Test_getItem(t *testing.T) {
 		Name         string
 		ListID       int
 		ItemID       int
-		ExpectedBody item.Record
+		ExpectedBody item.Item
 		ExpectedCode int
 	}{
 		{
@@ -190,10 +197,11 @@ func Test_getItem(t *testing.T) {
 			ExpectedCode: http.StatusOK,
 		},
 		{
-			Name:         "NotFound",
-			ListID:       testdb.SeedLists[0].ID,
-			ItemID:       0, // postgres serial starts at 1, 0 will never exist
-			ExpectedBody: item.Record{},
+			Name:   "NotFound",
+			ListID: testdb.SeedLists[0].ID,
+			// Using 0 for ItemID because postgres serial type starts at 1 so 0 will never exist.
+			ItemID:       0,
+			ExpectedBody: item.Item{},
 			ExpectedCode: http.StatusNotFound,
 		},
 	}
@@ -213,7 +221,7 @@ func Test_getItem(t *testing.T) {
 			}
 
 			if test.ExpectedCode != http.StatusNotFound {
-				var i item.Record
+				var i item.Item
 				resp := web.Response{
 					Results: &i,
 				}
@@ -234,21 +242,21 @@ func Test_getItem(t *testing.T) {
 
 func Test_updateItem(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
-	// changes items in the database
+	// changes items in the database.
 	defer ts.reseedDatabase(t)
 
 	tests := []struct {
 		Name         string
 		ListID       int
 		ItemID       int
-		RequestBody  item.Record
+		RequestBody  item.Item
 		ExpectedCode int
 	}{
 		{
 			Name:   "OK",
 			ListID: testdb.SeedLists[0].ID,
 			ItemID: testdb.SeedItems[0].ID,
-			RequestBody: item.Record{
+			RequestBody: item.Item{
 				Name:     "Foo",
 				Quantity: 1,
 			},
@@ -258,7 +266,7 @@ func Test_updateItem(t *testing.T) {
 			Name:   "NoName",
 			ListID: testdb.SeedLists[0].ID,
 			ItemID: testdb.SeedItems[0].ID,
-			RequestBody: item.Record{
+			RequestBody: item.Item{
 				Quantity: 1,
 			},
 			ExpectedCode: http.StatusBadRequest,
@@ -267,17 +275,18 @@ func Test_updateItem(t *testing.T) {
 			Name:   "LessThanOneQuantity",
 			ListID: testdb.SeedLists[0].ID,
 			ItemID: testdb.SeedItems[0].ID,
-			RequestBody: item.Record{
+			RequestBody: item.Item{
 				Name:     "Bar",
 				Quantity: 0,
 			},
 			ExpectedCode: http.StatusBadRequest,
 		},
 		{
-			Name:   "NotFoundList",
-			ListID: 0, // postgres serial starts at 1, 0 will never exist
+			Name: "NotFoundList",
+			// Using 0 for ListID because postgres serial type starts at 1 so 0 will never exist.
+			ListID: 0,
 			ItemID: testdb.SeedItems[0].ID,
-			RequestBody: item.Record{
+			RequestBody: item.Item{
 				Name:     "Bar",
 				Quantity: 1,
 			},
@@ -286,8 +295,9 @@ func Test_updateItem(t *testing.T) {
 		{
 			Name:   "NotFoundItem",
 			ListID: testdb.SeedLists[0].ID,
-			ItemID: 0, // postgres serial starts at 1, 0 will never exist
-			RequestBody: item.Record{
+			// Using 0 for ItemID because postgres serial type starts at 1 so 0 will never exist.
+			ItemID: 0,
+			RequestBody: item.Item{
 				Name:     "Bar",
 				Quantity: 1,
 			},
@@ -306,7 +316,12 @@ func Test_updateItem(t *testing.T) {
 			if err != nil {
 				t.Errorf("error creating request: %v", err)
 			}
-			defer req.Body.Close()
+
+			defer func() {
+				if err := req.Body.Close(); err != nil {
+					t.Errorf("error encountered closing request body: %v", err)
+				}
+			}()
 
 			w := httptest.NewRecorder()
 			ts.a.ServeHTTP(w, req)
@@ -316,7 +331,7 @@ func Test_updateItem(t *testing.T) {
 			}
 
 			if test.ExpectedCode == http.StatusOK {
-				var i item.Record
+				var i item.Item
 				resp := web.Response{
 					Results: &i,
 				}
@@ -349,7 +364,7 @@ func Test_updateItem(t *testing.T) {
 
 func Test_deleteItem(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
-	// deletes items in the database
+	// deletes items in the database.
 	defer ts.reseedDatabase(t)
 
 	tests := []struct {
@@ -365,9 +380,10 @@ func Test_deleteItem(t *testing.T) {
 			ExpectedCode: http.StatusNoContent,
 		},
 		{
-			Name:         "NotFound",
-			ListID:       testdb.SeedLists[0].ID,
-			ItemID:       0, // postgres serial starts at 1, 0 will never exist
+			Name:   "NotFound",
+			ListID: testdb.SeedLists[0].ID,
+			// Using 0 for ItemID because postgres serial type starts at 1 so 0 will never exist.
+			ItemID:       0,
 			ExpectedCode: http.StatusNotFound,
 		},
 	}

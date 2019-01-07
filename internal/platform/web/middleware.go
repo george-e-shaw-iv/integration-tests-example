@@ -49,7 +49,7 @@ func RequestMW(next http.Handler) http.Handler {
 			ResponseWriter: w,
 		}
 
-		// Check if request ID was passed in header. Otherwise, generate one.
+		// Check if request ID was passed in header, if it wasn't, generate a request ID.
 		id := r.Header.Get(requestIDHeader)
 		if id == "" {
 			id = uuid.New()

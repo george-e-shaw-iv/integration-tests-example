@@ -5,15 +5,14 @@ import (
 	"time"
 
 	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/list"
-
-	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/db"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
-// Record is a type that contains the proper struct tags for both
-// a JSON and Postgres representation of an item
-type Record struct {
+// Item is a type that contains the proper struct tags for both
+// a JSON and Postgres representation of an item.
+type Item struct {
 	ID       int       `json:"id" db:"item_id"`
 	ListID   int       `json:"listID" db:"list_id"`
 	Name     string    `json:"name" db:"name"`
@@ -22,13 +21,13 @@ type Record struct {
 	Modified time.Time `json:"modified" db:"modified"`
 }
 
-// SelectItems selects all appropriate rows from the item table given a list_id
-func SelectItems(dbc *sqlx.DB, listID int) ([]Record, error) {
-	if _, err := list.SelectList(dbc, list.FilterByID, listID); errors.Cause(err) == sql.ErrNoRows {
+// SelectItems selects all appropriate rows from the item table given a list_id.
+func SelectItems(dbc *sqlx.DB, listID int) ([]Item, error) {
+	if _, err := list.SelectList(dbc, listID); errors.Cause(err) == sql.ErrNoRows {
 		return nil, sql.ErrNoRows
 	}
 
-	items := make([]Record, 0)
+	items := make([]Item, 0)
 
 	if err := dbc.Select(&items, selectAll, listID); err != nil {
 		return nil, errors.Wrap(err, "select all rows from item table given a list_id")
@@ -37,64 +36,65 @@ func SelectItems(dbc *sqlx.DB, listID int) ([]Record, error) {
 	return items, nil
 }
 
-// SelectItem selects a single row from the item table based off given arguments and
-// one of the following filters: FilterByIDAndListID
-func SelectItem(dbc *sqlx.DB, filter string, args ...interface{}) (Record, error) {
-	var (
-		item Record
-		stmt string
-	)
-
-	switch filter {
-	case FilterByIDAndListID:
-		stmt = selectByIDAndListID
-	default:
-		return Record{}, db.ErrUnknownFilter
-	}
+// SelectItem selects a single row from the item table based off given list_id and
+// item_id.
+func SelectItem(dbc *sqlx.DB, iid, lid int) (Item, error) {
+	var i Item
+	stmt := selectByIDAndListID
 
 	pStmt, err := dbc.Preparex(stmt)
 	if err != nil {
-		return Record{}, errors.Wrap(err, "prepare select query")
-	}
-	defer pStmt.Close()
-
-	row := pStmt.QueryRowx(args...)
-
-	if err := row.StructScan(&item); err != nil {
-		return Record{}, errors.Wrap(err, "select singular row from item table")
+		return Item{}, errors.Wrap(err, "prepare select query")
 	}
 
-	return item, nil
+	defer func() {
+		if err := pStmt.Close(); err != nil {
+			logrus.WithError(errors.Wrap(err, "close psql statement")).Info("select item")
+		}
+	}()
+
+	row := pStmt.QueryRowx(iid, lid)
+
+	if err := row.StructScan(&i); err != nil {
+		return Item{}, errors.Wrap(err, "select singular row from item table")
+	}
+
+	return i, nil
 }
 
-// CreateItem inserts a new row into the item table
-func CreateItem(dbc *sqlx.DB, r Record) (Record, error) {
+// CreateItem inserts a new row into the item table.
+func CreateItem(dbc *sqlx.DB, r Item) (Item, error) {
 	r.Created = time.Now()
 	r.Modified = time.Now()
 
-	if _, err := list.SelectList(dbc, list.FilterByID, r.ListID); errors.Cause(err) == sql.ErrNoRows {
-		return Record{}, sql.ErrNoRows
+	if _, err := list.SelectList(dbc, r.ListID); errors.Cause(err) == sql.ErrNoRows {
+		return Item{}, sql.ErrNoRows
 	}
 
 	stmt, err := dbc.Prepare(insert)
 	if err != nil {
-		return Record{}, errors.Wrap(err, "insert new item row")
+		return Item{}, errors.Wrap(err, "insert new item row")
 	}
-	defer stmt.Close()
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logrus.WithError(errors.Wrap(err, "close psql statement")).Info("create item")
+		}
+	}()
 
 	row := stmt.QueryRow(r.ListID, r.Name, r.Quantity, r.Created, r.Modified)
 
 	if err = row.Scan(&r.ID); err != nil {
-		return Record{}, errors.Wrap(err, "get inserted row id")
+		return Item{}, errors.Wrap(err, "get inserted row id")
 	}
 
 	return r, nil
 }
 
 // UpdateItem updates a row in the item table based off of item_id and list_id. The only fields
-// able to be updated are the name and quantity field
-func UpdateItem(dbc *sqlx.DB, r Record) error {
-	if _, err := SelectItem(dbc, FilterByIDAndListID, r.ID, r.ListID); errors.Cause(err) == sql.ErrNoRows {
+// able to be updated are the name and quantity field.
+func UpdateItem(dbc *sqlx.DB, r Item) error {
+	if _, err := SelectItem(dbc, r.ID, r.ListID); errors.Cause(err) == sql.ErrNoRows {
 		return sql.ErrNoRows
 	}
 
@@ -107,9 +107,9 @@ func UpdateItem(dbc *sqlx.DB, r Record) error {
 	return nil
 }
 
-// DeleteItem deletes a row in the item table based off of item_id
+// DeleteItem deletes a row in the item table based off of item_id.
 func DeleteItem(dbc *sqlx.DB, itemID, listID int) error {
-	if _, err := SelectItem(dbc, FilterByIDAndListID, itemID, listID); errors.Cause(err) == sql.ErrNoRows {
+	if _, err := SelectItem(dbc, itemID, listID); errors.Cause(err) == sql.ErrNoRows {
 		return sql.ErrNoRows
 	}
 

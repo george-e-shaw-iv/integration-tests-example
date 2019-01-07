@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// getItems is a handler that returns all rows from the item table
+// getItems is a handler that returns all rows from the item table.
 func (a *Application) getItems(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	listID, err := strconv.Atoi(ps.ByName("lid"))
 	if err != nil {
@@ -32,14 +32,13 @@ func (a *Application) getItems(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	if len(items) == 0 {
-		web.Respond(w, r, http.StatusNoContent, nil)
-		return
+		items = make([]item.Item, 0)
 	}
 
 	web.Respond(w, r, http.StatusOK, items)
 }
 
-// getItems is a handler that creates a new row in the item table
+// getItems is a handler that creates a new row in the item table.
 func (a *Application) createItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	listID, err := strconv.Atoi(ps.ByName("lid"))
 	if err != nil {
@@ -47,7 +46,7 @@ func (a *Application) createItem(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	var payload item.Record
+	var payload item.Item
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "unmarshal request payload"))
 		return
@@ -80,7 +79,7 @@ func (a *Application) createItem(w http.ResponseWriter, r *http.Request, ps http
 }
 
 // getItem is a handler that returns a row from the item table based off of the lid and iid URL
-// parameters
+// parameters.
 func (a *Application) getItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	listID, err := strconv.Atoi(ps.ByName("lid"))
 	if err != nil {
@@ -94,7 +93,7 @@ func (a *Application) getItem(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	i, err := item.SelectItem(a.db, item.FilterByIDAndListID, itemID, listID)
+	i, err := item.SelectItem(a.db, itemID, listID)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
@@ -109,7 +108,7 @@ func (a *Application) getItem(w http.ResponseWriter, r *http.Request, ps httprou
 }
 
 // getItem is a handler that updates a row from the item table based off of the lid and iid URL
-// parameters as well as a given payload
+// parameters as well as a given payload.
 func (a *Application) updateItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	listID, err := strconv.Atoi(ps.ByName("lid"))
 	if err != nil {
@@ -123,7 +122,7 @@ func (a *Application) updateItem(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	var payload item.Record
+	var payload item.Item
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "unmarshal request payload"))
 		return
@@ -156,7 +155,7 @@ func (a *Application) updateItem(w http.ResponseWriter, r *http.Request, ps http
 }
 
 // getItem is a handler that deletes a row from the item table based off of the lid and iid URL
-// parameters
+// parameters.
 func (a *Application) deleteItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	listID, err := strconv.Atoi(ps.ByName("lid"))
 	if err != nil {

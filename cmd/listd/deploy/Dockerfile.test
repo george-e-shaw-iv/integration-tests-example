@@ -3,3 +3,6 @@ FROM golang:1.11
 # Copy Repository
 WORKDIR /integration-tests-example/
 COPY . ./
+
+# Run tests
+CMD go test ./...

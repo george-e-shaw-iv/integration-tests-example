@@ -51,7 +51,7 @@ func (a *Application) initHandlers() {
 	a.handler = web.RequestMW(r)
 }
 
-// ServeHTTP implements the http handler interface for Application
+// ServeHTTP implements the http handler interface for type Application.
 func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.handler.ServeHTTP(w, r)
 }
