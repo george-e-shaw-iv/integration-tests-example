@@ -1,7 +1,10 @@
-FROM golang:1.11 AS src
+FROM golang:1.11-alpine AS src
+
+# Install git
+RUN apk add --no-cache git
 
 # Copy Repository
-WORKDIR /integration-tests-example/
+WORKDIR /app/
 COPY . ./
 
 # Build Go Binary
@@ -18,7 +21,7 @@ RUN set -ex; \
         ca-certificates;
 
 WORKDIR /opt/
-COPY --from=src /integration-tests-example/listd .
+COPY --from=src /app/listd .
 
 # Run Go Binary
 CMD /opt/listd

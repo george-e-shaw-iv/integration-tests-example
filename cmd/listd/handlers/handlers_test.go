@@ -33,21 +33,20 @@ var ts testSuite
 // TestMain handles the setup of the testSuite, runs all of the unit tests within
 // the handlers package, and cleans up afterward.
 func TestMain(m *testing.M) {
-	var (
-		err      error
-		dbc      *sqlx.DB
-		exitCode = 1
-	)
+	var err error
+	var dbc *sqlx.DB
+
+	exitCode := 1
 
 	defer func() {
+		if err != nil {
+			log.WithError(err).Info("error in handlers TestMain")
+		}
+
 		if dbc != nil {
 			if err = dbc.Close(); err != nil {
 				log.WithError(err).Info("close test database connection")
 			}
-		}
-
-		if err != nil {
-			log.WithError(err).Info("error in handlers TestMain")
 		}
 
 		os.Exit(exitCode)
