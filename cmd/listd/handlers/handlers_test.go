@@ -7,6 +7,7 @@ import (
 	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/configuration"
 	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/db"
 	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/testdb"
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -32,26 +33,33 @@ var ts testSuite
 // TestMain handles the setup of the testSuite, runs all of the unit tests within
 // the handlers package, and cleans up afterward.
 func TestMain(m *testing.M) {
-	var mainErr error
-	defer func() {
-		if mainErr != nil {
-			log.WithFields(log.Fields{
-				"error": mainErr,
-			}).Error("error in handlers TestMain")
+	var err error
+	var dbc *sqlx.DB
 
-			os.Exit(1)
+	exitCode := 1
+
+	defer func() {
+		if err != nil {
+			log.WithError(err).Info("error in handlers TestMain")
 		}
+
+		if dbc != nil {
+			if err = dbc.Close(); err != nil {
+				log.WithError(err).Info("close test database connection")
+			}
+		}
+
+		os.Exit(exitCode)
 	}()
 
-	dbc, err := db.NewConnection(&configuration.Config{
+	if dbc, err = db.NewConnection(&configuration.Config{
 		DBUser: configuration.DefaultDBUser,
 		DBPass: configuration.DefaultDBPass,
 		DBName: testdb.DatabaseName,
 		DBHost: testdb.DatabaseHost,
 		DBPort: configuration.DefaultDBPort,
-	})
-	if err != nil {
-		mainErr = errors.Wrap(err, "create test database connection")
+	}); err != nil {
+		err = errors.Wrap(err, "create test database connection")
 		return
 	}
 
@@ -60,19 +68,10 @@ func TestMain(m *testing.M) {
 	// Initial seeding of the test database using test values defined within
 	// the testdb package. The testdb.Seed function also truncates all tables
 	// before seeding them.
-	if err := testdb.Seed(ts.a.db); err != nil {
-		mainErr = errors.Wrap(err, "seeding test database")
+	if err = testdb.Seed(ts.a.db); err != nil {
+		err = errors.Wrap(err, "seeding test database")
 		return
 	}
 
-	code := m.Run()
-
-	// Clean-up of the test database by closing it.
-	if err := dbc.Close(); err != nil {
-		log.Printf("error closing database connection: %v", err)
-	}
-
-	// m.Run() and os.Exit have to be separated between the clean up code
-	// because os.Exit does not respect deferred statements and/or functions.
-	os.Exit(code)
+	exitCode = m.Run()
 }

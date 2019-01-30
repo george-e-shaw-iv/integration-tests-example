@@ -1,8 +1,11 @@
-FROM golang:1.11
+FROM golang:1.11-alpine
+
+# Install git
+RUN apk add --no-cache git
 
 # Copy Repository
-WORKDIR /integration-tests-example/
+WORKDIR /app/
 COPY . ./
 
 # Run tests
-CMD go test ./...
+CMD CGO_ENABLED=0 go test ./...
