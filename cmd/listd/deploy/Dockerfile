@@ -9,7 +9,7 @@ COPY . ./
 
 # Build Go Binary
 RUN set -ex; \
-    CGO_ENABLED=0 GOOS=linux go build -o ./listd ./cmd/listd;
+    CGO_ENABLED=0 GOOS=linux go build -mod=vendor -o ./listd ./cmd/listd;
 
 # Final image, no source code
 FROM debian:jessie-slim

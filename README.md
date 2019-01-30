@@ -93,4 +93,5 @@ make test
 ```
 
 This will build the containers in docker-compose.test.yml and run
-`GO111MODULE=on go test ./...` against all testable go code in the repository.
+`GO111MODULE=on go test -mod=vendor ./...` against all testable go code in the
+repository.
