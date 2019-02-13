@@ -6,14 +6,20 @@ mod:
 	GO111MODULE=on go mod vendor
 
 up:
-	docker-compose -f ./docker-compose.yml up -d --build
+	docker-compose -f docker-compose.yml up -d --build
 
 stop:
-	docker-compose -f ./docker-compose.yml stop
+	docker-compose -f docker-compose.yml stop
 
 down:
-	docker-compose -f ./docker-compose.yml down
+	docker-compose -f docker-compose.yml down
 
 test:
-	docker-compose -f ./docker-compose.test.yml up --build --abort-on-container-exit
-	docker-compose -f ./docker-compose.test.yml down
+	docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+	docker-compose -f docker-compose.test.yml down
+
+testdb-up:
+	docker-compose -f docker-compose.test.yml up --build testdb
+
+testdb-down:
+	docker-compose -f docker-compose.test.yml down testdb
