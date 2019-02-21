@@ -4,12 +4,12 @@ FROM golang:1.11-alpine AS src
 RUN apk add --no-cache git
 
 # Copy Repository
-WORKDIR /app/
+WORKDIR /home/root/go/src/github.com/george-e-shaw-iv/integration-tests-example/
 COPY . ./
 
 # Build Go Binary
 RUN set -ex; \
-    CGO_ENABLED=0 GOOS=linux go build -mod=vendor -o ./listd ./cmd/listd;
+    CGO_ENABLED=0 GOOS=linux go build -o ./listd ./cmd/listd;
 
 # Final image, no source code
 FROM debian:jessie-slim
@@ -21,7 +21,7 @@ RUN set -ex; \
         ca-certificates;
 
 WORKDIR /opt/
-COPY --from=src /app/listd .
+COPY --from=src /home/root/go/src/github.com/george-e-shaw-iv/integration-tests-example/listd .
 
 # Run Go Binary
 CMD /opt/listd

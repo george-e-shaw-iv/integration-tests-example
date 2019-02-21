@@ -4,8 +4,8 @@ FROM golang:1.11-alpine
 RUN apk add --no-cache git
 
 # Copy Repository
-WORKDIR /app/
+WORKDIR /home/root/go/src/github.com/george-e-shaw-iv/integration-tests-example/
 COPY . ./
 
 # Run tests
-CMD CGO_ENABLED=0 go test ./... -mod=vendor
+CMD CGO_ENABLED=0 go test ./...
