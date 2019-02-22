@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: listd-postgres-deployment
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      integration: database
+  template:
+    metadata:
+      labels:
+        integration: database
+    spec:
+      containers:
+        - name: listd-postgres
+          image: postgres:11.1
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: root
+            - name: POSTGRES_PASSWORD
+              value: root
+            - name: POSTGRES_DB
+              value: list

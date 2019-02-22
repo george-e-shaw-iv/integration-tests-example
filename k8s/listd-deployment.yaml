@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: listd-deployment
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: listd
+  template:
+    metadata:
+      labels:
+        app: listd
+    spec:
+      containers:
+        - name: listd
+          image: georgeeshawiv/listd:1.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: 10.101.7.98

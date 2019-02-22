@@ -23,3 +23,10 @@ testdb-up:
 
 testdb-down:
 	docker-compose -f docker-compose.test.yml down testdb
+
+# Kubernetes Rules
+
+# Build and tag containers
+tag:
+	docker build -t georgeeshawiv/listd:1.0 -f cmd/listd/deploy/Dockerfile .
+	docker push georgeeshawiv/listd:1.0
