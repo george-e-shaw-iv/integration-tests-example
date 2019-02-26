@@ -18,8 +18,8 @@ test:
 	docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
 	docker-compose -f docker-compose.test.yml down
 
-testdb-up:
-	docker-compose -f docker-compose.test.yml up --build testdb
+test-db-up:
+	docker-compose -f docker-compose.test.yml up --build db
 
-testdb-down:
-	docker-compose -f docker-compose.test.yml down testdb
+test-db-down:
+	docker-compose -f docker-compose.test.yml down db

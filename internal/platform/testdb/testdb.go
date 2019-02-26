@@ -15,11 +15,6 @@ const (
 	// in order to not corrupt production data just in case the tests get ran
 	// with the wrong compose file.
 	DatabaseName = "testdb"
-
-	// DatabaseName is the name of the database host that gets used during
-	// testing in order to not conflict with the hostname of the production
-	// database.
-	DatabaseHost = "testdb"
 )
 
 var (

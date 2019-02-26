@@ -5,15 +5,15 @@ networks:
     driver: bridge
 
 services:
-  test:
+  listd_tests:
     build:
       context: .
       dockerfile: ./cmd/listd/deploy/Dockerfile.test
     depends_on:
-      - testdb
+      - db
     networks:
       - integration-tests-example-test
-  testdb:
+  db:
     image: postgres:11.1
     ports:
       - "5432:5432"

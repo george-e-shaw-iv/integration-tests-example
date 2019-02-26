@@ -56,7 +56,7 @@ func TestMain(m *testing.M) {
 		DBUser: configuration.DefaultDBUser,
 		DBPass: configuration.DefaultDBPass,
 		DBName: testdb.DatabaseName,
-		DBHost: testdb.DatabaseHost,
+		DBHost: configuration.DefaultDBHost,
 		DBPort: configuration.DefaultDBPort,
 	}); err != nil {
 		err = errors.Wrap(err, "create test database connection")
