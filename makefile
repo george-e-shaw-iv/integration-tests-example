@@ -28,5 +28,24 @@ testdb-down:
 
 # Build and tag containers
 tag:
-	docker build -t georgeeshawiv/listd:1.0 -f cmd/listd/deploy/Dockerfile .
-	docker push georgeeshawiv/listd:1.0
+	docker build -t georgeeshawiv/listd:1.1 -f cmd/listd/deploy/Dockerfile .
+	docker push georgeeshawiv/listd:1.1
+
+# Add example.com as a host for the ingress resource
+add-host:
+	echo "$$(minikube ip) example.com" | sudo tee -a /etc/hosts
+
+# Make sure minikube is started before running this
+kube-up:
+	kubectl create -f k8s/postgres-deployment.yaml
+	kubectl create -f k8s/postgres-service.yaml
+	kubectl create -f k8s/listd-deployment.yaml
+	kubectl create -f k8s/listd-service.yaml
+	kubectl create -f k8s/ingress.yaml
+
+kube-down:
+	kubectl delete -f k8s/ingress.yaml
+	kubectl delete -f k8s/listd-service.yaml
+	kubectl delete -f k8s/listd-deployment.yaml
+	kubectl delete -f k8s/postgres-service.yaml
+	kubectl delete -f k8s/postgres-deployment.yaml

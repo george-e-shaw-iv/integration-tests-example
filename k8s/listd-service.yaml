@@ -4,10 +4,9 @@ metadata:
   name: listd-service
 
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: listd
   ports:
     - port: 3000 # Service (virtual network) abstraction port
       targetPort: 3000 # Container port
-      nodePort: 30030 # Port to expose on node

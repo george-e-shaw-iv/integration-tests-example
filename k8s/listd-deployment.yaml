@@ -15,9 +15,21 @@ spec:
     spec:
       containers:
         - name: listd
-          image: georgeeshawiv/listd:1.0
+          image: georgeeshawiv/listd:1.1
+          readinessProbe:
+            httpGet:
+              port: 3000
+              path: /ready
+            initialDelaySeconds: 3
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              port: 3000
+              path: /healthy
+            initialDelaySeconds: 3
+            periodSeconds: 30
           ports:
             - containerPort: 3000
           env:
             - name: DB_HOST
-              value: 10.101.7.98
+              value: postgres-service.default.svc.cluster.local
