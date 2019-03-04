@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: listd-postgres-deployment
+  namespace: integration-tests-example
+  labels:
+    integration: database
 
 spec:
   replicas: 1

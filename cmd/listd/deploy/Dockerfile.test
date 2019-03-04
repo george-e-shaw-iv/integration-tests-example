@@ -1,11 +1,12 @@
-FROM golang:1.11-alpine
+FROM golang:1.12-alpine
 
 # Install git
-RUN apk add --no-cache git
+RUN set -ex; \
+    apk update; \
+    apk add --no-cache git
 
-# Copy Repository
-WORKDIR /home/root/go/src/github.com/george-e-shaw-iv/integration-tests-example/
-COPY . ./
+# Set working directory
+WORKDIR /go/src/github.com/george-e-shaw-iv/integration-tests-example/
 
 # Run tests
 CMD CGO_ENABLED=0 go test ./...

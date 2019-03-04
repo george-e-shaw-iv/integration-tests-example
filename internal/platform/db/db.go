@@ -20,13 +20,24 @@ var (
 // NewConnection returns a new database connection with the schema applied, if not already
 // applied.
 func NewConnection(cfg *configuration.Config) (*sqlx.DB, error) {
+	var db *sqlx.DB
+	var err error
+
 	conn := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%d sslmode=disable",
 		cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost, cfg.DBPort)
 
-	db, err := sqlx.Connect("postgres", conn)
-	if err != nil {
-		return nil, errors.Wrap(err, "connect to postgres database")
+	log.Info("connecting to postgres database...")
+	if db, err = sqlx.Connect("postgres", conn); err != nil {
+		ticker := time.NewTicker(time.Second * 1)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			if db, err = sqlx.Connect("postgres", conn); err == nil {
+				break
+			}
+		}
 	}
+	log.Info("connected to postgres database")
 
 	log.Info("verifying postgres connection...")
 	if err := db.Ping(); err != nil {
@@ -39,7 +50,7 @@ func NewConnection(cfg *configuration.Config) (*sqlx.DB, error) {
 			}
 		}
 	}
-	log.Info("connected to postgres database")
+	log.Info("verified postgres connection")
 
 	if _, err = db.Exec(schema); err != nil {
 		return nil, errors.Wrap(err, "apply database schema")

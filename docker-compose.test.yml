@@ -9,6 +9,8 @@ services:
     build:
       context: .
       dockerfile: ./cmd/listd/deploy/Dockerfile.test
+    volumes:
+      - $PWD:/go/src/github.com/george-e-shaw-iv/integration-tests-example
     depends_on:
       - testdb
     networks:
