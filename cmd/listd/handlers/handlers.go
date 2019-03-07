@@ -34,6 +34,14 @@ func NewApplication(db *sqlx.DB, cfg *configuration.Config) *Application {
 func (a *Application) initHandlers() {
 	r := httprouter.New()
 
+	// Kubernetes Probes
+	probeHandler := func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		w.WriteHeader(http.StatusOK)
+	}
+
+	r.GET("/ready", probeHandler)
+	r.GET("/healthy", probeHandler)
+
 	// List Routes
 	r.GET("/list", a.getLists)
 	r.POST("/list", a.createList)

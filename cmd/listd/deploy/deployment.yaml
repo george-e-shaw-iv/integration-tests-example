@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: listd-deployment
+  namespace: integration-tests-example
+  labels:
+    app: listd
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: listd
+  template:
+    metadata:
+      labels:
+        app: listd
+    spec:
+      containers:
+        - name: listd
+          image: georgeeshawiv/listd:1.2
+          readinessProbe:
+            httpGet:
+              port: 3000
+              path: /ready
+            initialDelaySeconds: 3
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              port: 3000
+              path: /healthy
+            initialDelaySeconds: 3
+            periodSeconds: 30
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: postgres-service.integration-tests-example.svc.cluster.local

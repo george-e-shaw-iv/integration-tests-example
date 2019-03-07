@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: master-ingress
+  namespace: integration-tests-example
+
+spec:
+  rules:
+    - host: list.example.com
+      http:
+        paths:
+          - backend:
+              serviceName: listd-service
+              servicePort: 3000

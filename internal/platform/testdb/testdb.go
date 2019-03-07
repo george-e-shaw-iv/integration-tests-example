@@ -32,7 +32,7 @@ func Seed(dbc *sqlx.DB) error {
 		return errors.Wrap(err, "truncate before seeding")
 	}
 
-	now := time.Now().UTC().Truncate(time.Second)
+	now := time.Now().UTC().Truncate(time.Microsecond)
 
 	if err := seedLists(dbc, now); err != nil {
 		return errors.Wrap(err, "seed list data")
@@ -47,7 +47,7 @@ func Seed(dbc *sqlx.DB) error {
 
 // Truncate removes all seed data from the test database.
 func Truncate(dbc *sqlx.DB) error {
-	stmt := "TRUNCATE TABLE list CASCADE;"
+	stmt := "TRUNCATE TABLE list, item;"
 
 	if _, err := dbc.Exec(stmt); err != nil {
 		return errors.Wrap(err, "truncate tables")
@@ -56,7 +56,7 @@ func Truncate(dbc *sqlx.DB) error {
 	return nil
 }
 
-// seedItems handles seeding the list table in the database for integration tests.
+// seedLists handles seeding the list table in the database for integration tests.
 func seedLists(dbc *sqlx.DB, t time.Time) error {
 	SeedLists = []list.List{
 		{
