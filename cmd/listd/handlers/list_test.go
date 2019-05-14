@@ -26,7 +26,7 @@ func Test_getLists(t *testing.T) {
 	}{
 		{
 			Name:         "OK",
-			ExpectedBody: testdb.SeedLists,
+			ExpectedBody: ts.lists,
 			ExpectedCode: http.StatusOK,
 		},
 		{
@@ -160,8 +160,8 @@ func Test_getList(t *testing.T) {
 	}{
 		{
 			Name:         "OK",
-			ListID:       testdb.SeedLists[0].ID,
-			ExpectedBody: testdb.SeedLists[0],
+			ListID:       ts.lists[0].ID,
+			ExpectedBody: ts.lists[0],
 			ExpectedCode: http.StatusOK,
 		},
 		{
@@ -220,7 +220,7 @@ func Test_updateList(t *testing.T) {
 	}{
 		{
 			Name:   "OK",
-			ListID: testdb.SeedLists[0].ID,
+			ListID: ts.lists[0].ID,
 			RequestBody: list.List{
 				Name: "Foo",
 			},
@@ -228,7 +228,7 @@ func Test_updateList(t *testing.T) {
 		},
 		{
 			Name:   "BreakUniqueNameConstraint",
-			ListID: testdb.SeedLists[1].ID,
+			ListID: ts.lists[1].ID,
 			RequestBody: list.List{
 				Name: "Foo",
 			},
@@ -236,7 +236,7 @@ func Test_updateList(t *testing.T) {
 		},
 		{
 			Name:         "NoName",
-			ListID:       testdb.SeedLists[0].ID,
+			ListID:       ts.lists[0].ID,
 			RequestBody:  list.List{},
 			ExpectedCode: http.StatusBadRequest,
 		},
@@ -308,7 +308,7 @@ func Test_deleteList(t *testing.T) {
 	}{
 		{
 			Name:         "OK",
-			ListID:       testdb.SeedLists[0].ID,
+			ListID:       ts.lists[0].ID,
 			ExpectedCode: http.StatusNoContent,
 		},
 		{

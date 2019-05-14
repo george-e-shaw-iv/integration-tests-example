@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/item"
-	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/testdb"
 	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/web"
 	"github.com/google/go-cmp/cmp"
 )
@@ -23,16 +22,16 @@ func Test_getItems(t *testing.T) {
 	}{
 		{
 			Name:   "OK",
-			ListID: testdb.SeedLists[0].ID,
+			ListID: ts.lists[0].ID,
 			ExpectedBody: []item.Item{
-				testdb.SeedItems[0],
-				testdb.SeedItems[1],
+				ts.items[0],
+				ts.items[1],
 			},
 			ExpectedCode: http.StatusOK,
 		},
 		{
 			Name:         "NoContent",
-			ListID:       testdb.SeedLists[2].ID,
+			ListID:       ts.lists[2].ID,
 			ExpectedBody: []item.Item{},
 			ExpectedCode: http.StatusOK,
 		},
@@ -92,7 +91,7 @@ func Test_createItem(t *testing.T) {
 	}{
 		{
 			Name:   "OK",
-			ListID: testdb.SeedLists[0].ID,
+			ListID: ts.lists[0].ID,
 			RequestBody: item.Item{
 				Name:     "Foo",
 				Quantity: 1,
@@ -101,7 +100,7 @@ func Test_createItem(t *testing.T) {
 		},
 		{
 			Name:   "NoName",
-			ListID: testdb.SeedLists[0].ID,
+			ListID: ts.lists[0].ID,
 			RequestBody: item.Item{
 				Quantity: 1,
 			},
@@ -109,7 +108,7 @@ func Test_createItem(t *testing.T) {
 		},
 		{
 			Name:   "LessThanOneQuantity",
-			ListID: testdb.SeedLists[0].ID,
+			ListID: ts.lists[0].ID,
 			RequestBody: item.Item{
 				Name:     "Bar",
 				Quantity: 0,
@@ -191,14 +190,14 @@ func Test_getItem(t *testing.T) {
 	}{
 		{
 			Name:         "OK",
-			ListID:       testdb.SeedLists[0].ID,
-			ItemID:       testdb.SeedItems[0].ID,
-			ExpectedBody: testdb.SeedItems[0],
+			ListID:       ts.lists[0].ID,
+			ItemID:       ts.items[0].ID,
+			ExpectedBody: ts.items[0],
 			ExpectedCode: http.StatusOK,
 		},
 		{
 			Name:   "NotFound",
-			ListID: testdb.SeedLists[0].ID,
+			ListID: ts.lists[0].ID,
 			// Using 0 for ItemID because postgres serial type starts at 1 so 0 will never exist.
 			ItemID:       0,
 			ExpectedBody: item.Item{},
@@ -254,8 +253,8 @@ func Test_updateItem(t *testing.T) {
 	}{
 		{
 			Name:   "OK",
-			ListID: testdb.SeedLists[0].ID,
-			ItemID: testdb.SeedItems[0].ID,
+			ListID: ts.lists[0].ID,
+			ItemID: ts.items[0].ID,
 			RequestBody: item.Item{
 				Name:     "Foo",
 				Quantity: 1,
@@ -264,8 +263,8 @@ func Test_updateItem(t *testing.T) {
 		},
 		{
 			Name:   "NoName",
-			ListID: testdb.SeedLists[0].ID,
-			ItemID: testdb.SeedItems[0].ID,
+			ListID: ts.lists[0].ID,
+			ItemID: ts.items[0].ID,
 			RequestBody: item.Item{
 				Quantity: 1,
 			},
@@ -273,8 +272,8 @@ func Test_updateItem(t *testing.T) {
 		},
 		{
 			Name:   "LessThanOneQuantity",
-			ListID: testdb.SeedLists[0].ID,
-			ItemID: testdb.SeedItems[0].ID,
+			ListID: ts.lists[0].ID,
+			ItemID: ts.items[0].ID,
 			RequestBody: item.Item{
 				Name:     "Bar",
 				Quantity: 0,
@@ -285,7 +284,7 @@ func Test_updateItem(t *testing.T) {
 			Name: "NotFoundList",
 			// Using 0 for ListID because postgres serial type starts at 1 so 0 will never exist.
 			ListID: 0,
-			ItemID: testdb.SeedItems[0].ID,
+			ItemID: ts.items[0].ID,
 			RequestBody: item.Item{
 				Name:     "Bar",
 				Quantity: 1,
@@ -294,7 +293,7 @@ func Test_updateItem(t *testing.T) {
 		},
 		{
 			Name:   "NotFoundItem",
-			ListID: testdb.SeedLists[0].ID,
+			ListID: ts.lists[0].ID,
 			// Using 0 for ItemID because postgres serial type starts at 1 so 0 will never exist.
 			ItemID: 0,
 			RequestBody: item.Item{
@@ -375,13 +374,13 @@ func Test_deleteItem(t *testing.T) {
 	}{
 		{
 			Name:         "OK",
-			ListID:       testdb.SeedLists[0].ID,
-			ItemID:       testdb.SeedItems[0].ID,
+			ListID:       ts.lists[0].ID,
+			ItemID:       ts.items[0].ID,
 			ExpectedCode: http.StatusNoContent,
 		},
 		{
 			Name:   "NotFound",
-			ListID: testdb.SeedLists[0].ID,
+			ListID: ts.lists[0].ID,
 			// Using 0 for ItemID because postgres serial type starts at 1 so 0 will never exist.
 			ItemID:       0,
 			ExpectedCode: http.StatusNotFound,

@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/configuration"
+	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/item"
+	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/list"
 	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/db"
 	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/testdb"
 	"github.com/jmoiron/sqlx"
@@ -15,13 +17,18 @@ import (
 // testSuite is a struct type that contains necessary fields to carry out
 // tasks to fully test the handlers package along with it's integrations.
 type testSuite struct {
-	a *Application
+	a     *Application
+	lists []list.List
+	items []item.Item
 }
 
 // reseedDatabase is a function attached to the testSuite type that attempts
 // to reseed the database back to its original testing state.
 func (ts *testSuite) reseedDatabase(t *testing.T) {
-	if err := testdb.Seed(ts.a.db); err != nil {
+	var err error
+
+	ts.lists, ts.items, err = testdb.Seed(ts.a.db)
+	if err != nil {
 		t.Errorf("error encountered while seeding database: %v", err)
 	}
 }
@@ -68,7 +75,8 @@ func TestMain(m *testing.M) {
 	// Initial seeding of the test database using test values defined within
 	// the testdb package. The testdb.Seed function also truncates all tables
 	// before seeding them.
-	if err = testdb.Seed(ts.a.db); err != nil {
+	ts.lists, ts.items, err = testdb.Seed(ts.a.db)
+	if err != nil {
 		err = errors.Wrap(err, "seeding test database")
 		return
 	}
