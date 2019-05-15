@@ -40,7 +40,7 @@ func Test_getLists(t *testing.T) {
 		// NoConent test needs to have lists removed from the database to be tested.
 		if test.Name == tests[1].Name {
 			if err := testdb.Truncate(ts.a.db); err != nil {
-				t.Errorf("error encountered truncating database: %v", err)
+				t.Errorf("truncate database: %v", err)
 			}
 		}
 

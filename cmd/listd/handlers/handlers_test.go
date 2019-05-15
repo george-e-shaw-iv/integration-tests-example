@@ -27,9 +27,16 @@ type testSuite struct {
 func (ts *testSuite) reseedDatabase(t *testing.T) {
 	var err error
 
-	ts.lists, ts.items, err = testdb.Seed(ts.a.db)
-	if err != nil {
-		t.Errorf("error encountered while seeding database: %v", err)
+	if err = testdb.Truncate(ts.a.db); err != nil {
+		t.Errorf("error truncating database: %v", err)
+	}
+
+	if ts.lists, err = testdb.SeedLists(ts.a.db); err != nil {
+		t.Errorf("error seeding lists: %v", err)
+	}
+
+	if ts.items, err = testdb.SeedItems(ts.a.db, ts.lists); err != nil {
+		t.Errorf("error seeding items: %v", err)
 	}
 }
 
@@ -73,11 +80,19 @@ func TestMain(m *testing.M) {
 	ts.a = NewApplication(dbc, &configuration.Config{})
 
 	// Initial seeding of the test database using test values defined within
-	// the testdb package. The testdb.Seed function also truncates all tables
-	// before seeding them.
-	ts.lists, ts.items, err = testdb.Seed(ts.a.db)
-	if err != nil {
-		err = errors.Wrap(err, "seeding test database")
+	// the testdb package.
+	if err = testdb.Truncate(ts.a.db); err != nil {
+		err = errors.Wrap(err, "truncate database")
+		return
+	}
+
+	if ts.lists, err = testdb.SeedLists(ts.a.db); err != nil {
+		err = errors.Wrap(err, "seed lists")
+		return
+	}
+
+	if ts.items, err = testdb.SeedItems(ts.a.db, ts.lists); err != nil {
+		err = errors.Wrap(err, "seed items")
 		return
 	}
 

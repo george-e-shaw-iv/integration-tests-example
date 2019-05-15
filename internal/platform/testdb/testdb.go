@@ -17,28 +17,6 @@ const (
 	DatabaseName = "testdb"
 )
 
-// Seed handles seeding all necessary tables in the database in order to carry
-// out integration testing.
-func Seed(dbc *sqlx.DB) ([]list.List, []item.Item, error) {
-	if err := Truncate(dbc); err != nil {
-		return nil, nil, errors.Wrap(err, "truncate before seeding")
-	}
-
-	now := time.Now().UTC().Truncate(time.Microsecond)
-
-	lists, err := seedLists(dbc, now)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "seed list data")
-	}
-
-	items, err := seedItems(dbc, now, lists)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "seed item data")
-	}
-
-	return lists, items, nil
-}
-
 // Truncate removes all seed data from the test database.
 func Truncate(dbc *sqlx.DB) error {
 	stmt := "TRUNCATE TABLE list, item;"
@@ -50,23 +28,25 @@ func Truncate(dbc *sqlx.DB) error {
 	return nil
 }
 
-// seedLists handles seeding the list table in the database for integration tests.
-func seedLists(dbc *sqlx.DB, t time.Time) ([]list.List, error) {
+// SeedLists handles seeding the list table in the database for integration tests.
+func SeedLists(dbc *sqlx.DB) ([]list.List, error) {
+	now := time.Now().Truncate(time.Microsecond)
+
 	lists := []list.List{
 		{
 			Name:     "Grocery",
-			Created:  t,
-			Modified: t,
+			Created:  now,
+			Modified: now,
 		},
 		{
 			Name:     "Todo",
-			Created:  t,
-			Modified: t,
+			Created:  now,
+			Modified: now,
 		},
 		{
 			Name:     "Employees",
-			Created:  t,
-			Modified: t,
+			Created:  now,
+			Modified: now,
 		},
 	}
 
@@ -94,33 +74,35 @@ func seedLists(dbc *sqlx.DB, t time.Time) ([]list.List, error) {
 	return lists, nil
 }
 
-// seedItems handles seeding the item table in the database for integration tests.
-func seedItems(dbc *sqlx.DB, t time.Time, lists []list.List) ([]item.Item, error) {
+// SeedItems handles seeding the item table in the database for integration tests.
+func SeedItems(dbc *sqlx.DB, lists []list.List) ([]item.Item, error) {
 	if len(lists) == 0 {
 		return nil, errors.New("list data does not exist, necessary for item seeding")
 	}
+
+	now := time.Now().Truncate(time.Microsecond)
 
 	items := []item.Item{
 		{
 			ListID:   lists[0].ID, // Grocery List
 			Name:     "Chocolate Milk",
 			Quantity: 1,
-			Created:  t,
-			Modified: t,
+			Created:  now,
+			Modified: now,
 		},
 		{
 			ListID:   lists[0].ID, // Grocery List
 			Name:     "Mac and Cheese",
 			Quantity: 2,
-			Created:  t,
-			Modified: t,
+			Created:  now,
+			Modified: now,
 		},
 		{
 			ListID:   lists[1].ID, // Todo List
 			Name:     "Write Integration Tests",
 			Quantity: 1,
-			Created:  t,
-			Modified: t,
+			Created:  now,
+			Modified: now,
 		},
 	}
 
