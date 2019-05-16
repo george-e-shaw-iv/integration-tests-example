@@ -81,7 +81,11 @@ func Test_getItems(t *testing.T) {
 func Test_createItem(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
 	// adds items to the database.
-	defer ts.reseedDatabase(t)
+	defer func() {
+		if err := ts.reseedDatabase(); err != nil {
+			t.Errorf("error reseeding database: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		Name         string
@@ -242,7 +246,11 @@ func Test_getItem(t *testing.T) {
 func Test_updateItem(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
 	// changes items in the database.
-	defer ts.reseedDatabase(t)
+	defer func() {
+		if err := ts.reseedDatabase(); err != nil {
+			t.Errorf("error reseeding database: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		Name         string
@@ -364,7 +372,11 @@ func Test_updateItem(t *testing.T) {
 func Test_deleteItem(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
 	// deletes items in the database.
-	defer ts.reseedDatabase(t)
+	defer func() {
+		if err := ts.reseedDatabase(); err != nil {
+			t.Errorf("error reseeding database: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		Name         string

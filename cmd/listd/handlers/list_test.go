@@ -17,7 +17,11 @@ import (
 func Test_getLists(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
 	// removes lists from the database.
-	defer ts.reseedDatabase(t)
+	defer func() {
+		if err := ts.reseedDatabase(); err != nil {
+			t.Errorf("error reseeding database: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		Name         string
@@ -40,7 +44,7 @@ func Test_getLists(t *testing.T) {
 		// NoConent test needs to have lists removed from the database to be tested.
 		if test.Name == tests[1].Name {
 			if err := testdb.Truncate(ts.a.db); err != nil {
-				t.Errorf("truncate database: %v", err)
+				t.Errorf("error truncating database: %v", err)
 			}
 		}
 
@@ -78,7 +82,11 @@ func Test_getLists(t *testing.T) {
 func Test_createList(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
 	// adds lists to the database.
-	defer ts.reseedDatabase(t)
+	defer func() {
+		if err := ts.reseedDatabase(); err != nil {
+			t.Errorf("error reseeding database: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		Name         string
@@ -210,7 +218,11 @@ func Test_getList(t *testing.T) {
 func Test_updateList(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
 	// changes lists in the database.
-	defer ts.reseedDatabase(t)
+	defer func() {
+		if err := ts.reseedDatabase(); err != nil {
+			t.Errorf("error reseeding database: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		Name         string
@@ -299,7 +311,11 @@ func Test_updateList(t *testing.T) {
 func Test_deleteList(t *testing.T) {
 	// Test database needs reseeded after this test is ran because this test
 	// deletes lists in the database.
-	defer ts.reseedDatabase(t)
+	defer func() {
+		if err := ts.reseedDatabase(); err != nil {
+			t.Errorf("error reseeding database: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		Name         string

@@ -24,20 +24,22 @@ type testSuite struct {
 
 // reseedDatabase is a function attached to the testSuite type that attempts
 // to reseed the database back to its original testing state.
-func (ts *testSuite) reseedDatabase(t *testing.T) {
+func (ts *testSuite) reseedDatabase() error {
 	var err error
 
 	if err = testdb.Truncate(ts.a.db); err != nil {
-		t.Errorf("error truncating database: %v", err)
+		return errors.Wrap(err, "truncate database")
 	}
 
 	if ts.lists, err = testdb.SeedLists(ts.a.db); err != nil {
-		t.Errorf("error seeding lists: %v", err)
+		return errors.Wrap(err, "seed list data")
 	}
 
 	if ts.items, err = testdb.SeedItems(ts.a.db, ts.lists); err != nil {
-		t.Errorf("error seeding items: %v", err)
+		return errors.Wrap(err, "seed item data")
 	}
+
+	return nil
 }
 
 // ts is the global variable that is of type testSuite which helps test the
@@ -79,20 +81,9 @@ func TestMain(m *testing.M) {
 
 	ts.a = NewApplication(dbc, &configuration.Config{})
 
-	// Initial seeding of the test database using test values defined within
-	// the testdb package.
-	if err = testdb.Truncate(ts.a.db); err != nil {
-		err = errors.Wrap(err, "truncate database")
-		return
-	}
-
-	if ts.lists, err = testdb.SeedLists(ts.a.db); err != nil {
-		err = errors.Wrap(err, "seed lists")
-		return
-	}
-
-	if ts.items, err = testdb.SeedItems(ts.a.db, ts.lists); err != nil {
-		err = errors.Wrap(err, "seed items")
+	// Initial seeding of the test database
+	if err := ts.reseedDatabase(); err != nil {
+		err = errors.Wrap(err, "initial database seeding")
 		return
 	}
 
