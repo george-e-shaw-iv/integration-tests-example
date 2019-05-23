@@ -9,11 +9,17 @@ import (
 	"testing"
 
 	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/item"
+	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/testdb"
 	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/web"
 	"github.com/google/go-cmp/cmp"
 )
 
 func Test_getItems(t *testing.T) {
+	expectedLists := testdb.SeedLists(t, ts.a.db)
+	expectedItems := testdb.SeedItems(t, ts.a.db, expectedLists)
+
+	defer testdb.Truncate(t, ts.a.db)
+
 	tests := []struct {
 		Name         string
 		ListID       int
@@ -22,16 +28,16 @@ func Test_getItems(t *testing.T) {
 	}{
 		{
 			Name:   "OK",
-			ListID: ts.lists[0].ID,
+			ListID: expectedLists[0].ID,
 			ExpectedBody: []item.Item{
-				ts.items[0],
-				ts.items[1],
+				expectedItems[0],
+				expectedItems[1],
 			},
 			ExpectedCode: http.StatusOK,
 		},
 		{
 			Name:         "NoContent",
-			ListID:       ts.lists[2].ID,
+			ListID:       expectedLists[2].ID,
 			ExpectedBody: []item.Item{},
 			ExpectedCode: http.StatusOK,
 		},
@@ -79,13 +85,8 @@ func Test_getItems(t *testing.T) {
 }
 
 func Test_createItem(t *testing.T) {
-	// Test database needs reseeded after this test is ran because this test
-	// adds items to the database.
-	defer func() {
-		if err := ts.reseedDatabase(); err != nil {
-			t.Errorf("error reseeding database: %v", err)
-		}
-	}()
+	expectedLists := testdb.SeedLists(t, ts.a.db)
+	defer testdb.Truncate(t, ts.a.db)
 
 	tests := []struct {
 		Name         string
@@ -95,7 +96,7 @@ func Test_createItem(t *testing.T) {
 	}{
 		{
 			Name:   "OK",
-			ListID: ts.lists[0].ID,
+			ListID: expectedLists[0].ID,
 			RequestBody: item.Item{
 				Name:     "Foo",
 				Quantity: 1,
@@ -104,7 +105,7 @@ func Test_createItem(t *testing.T) {
 		},
 		{
 			Name:   "NoName",
-			ListID: ts.lists[0].ID,
+			ListID: expectedLists[0].ID,
 			RequestBody: item.Item{
 				Quantity: 1,
 			},
@@ -112,7 +113,7 @@ func Test_createItem(t *testing.T) {
 		},
 		{
 			Name:   "LessThanOneQuantity",
-			ListID: ts.lists[0].ID,
+			ListID: expectedLists[0].ID,
 			RequestBody: item.Item{
 				Name:     "Bar",
 				Quantity: 0,
@@ -185,6 +186,11 @@ func Test_createItem(t *testing.T) {
 }
 
 func Test_getItem(t *testing.T) {
+	expectedLists := testdb.SeedLists(t, ts.a.db)
+	expectedItems := testdb.SeedItems(t, ts.a.db, expectedLists)
+
+	defer testdb.Truncate(t, ts.a.db)
+
 	tests := []struct {
 		Name         string
 		ListID       int
@@ -194,14 +200,14 @@ func Test_getItem(t *testing.T) {
 	}{
 		{
 			Name:         "OK",
-			ListID:       ts.lists[0].ID,
-			ItemID:       ts.items[0].ID,
-			ExpectedBody: ts.items[0],
+			ListID:       expectedLists[0].ID,
+			ItemID:       expectedItems[0].ID,
+			ExpectedBody: expectedItems[0],
 			ExpectedCode: http.StatusOK,
 		},
 		{
 			Name:   "NotFound",
-			ListID: ts.lists[0].ID,
+			ListID: expectedLists[0].ID,
 			// Using 0 for ItemID because postgres serial type starts at 1 so 0 will never exist.
 			ItemID:       0,
 			ExpectedBody: item.Item{},
@@ -244,13 +250,10 @@ func Test_getItem(t *testing.T) {
 }
 
 func Test_updateItem(t *testing.T) {
-	// Test database needs reseeded after this test is ran because this test
-	// changes items in the database.
-	defer func() {
-		if err := ts.reseedDatabase(); err != nil {
-			t.Errorf("error reseeding database: %v", err)
-		}
-	}()
+	expectedLists := testdb.SeedLists(t, ts.a.db)
+	expectedItems := testdb.SeedItems(t, ts.a.db, expectedLists)
+
+	defer testdb.Truncate(t, ts.a.db)
 
 	tests := []struct {
 		Name         string
@@ -261,8 +264,8 @@ func Test_updateItem(t *testing.T) {
 	}{
 		{
 			Name:   "OK",
-			ListID: ts.lists[0].ID,
-			ItemID: ts.items[0].ID,
+			ListID: expectedLists[0].ID,
+			ItemID: expectedItems[0].ID,
 			RequestBody: item.Item{
 				Name:     "Foo",
 				Quantity: 1,
@@ -271,8 +274,8 @@ func Test_updateItem(t *testing.T) {
 		},
 		{
 			Name:   "NoName",
-			ListID: ts.lists[0].ID,
-			ItemID: ts.items[0].ID,
+			ListID: expectedLists[0].ID,
+			ItemID: expectedItems[0].ID,
 			RequestBody: item.Item{
 				Quantity: 1,
 			},
@@ -280,8 +283,8 @@ func Test_updateItem(t *testing.T) {
 		},
 		{
 			Name:   "LessThanOneQuantity",
-			ListID: ts.lists[0].ID,
-			ItemID: ts.items[0].ID,
+			ListID: expectedLists[0].ID,
+			ItemID: expectedItems[0].ID,
 			RequestBody: item.Item{
 				Name:     "Bar",
 				Quantity: 0,
@@ -292,7 +295,7 @@ func Test_updateItem(t *testing.T) {
 			Name: "NotFoundList",
 			// Using 0 for ListID because postgres serial type starts at 1 so 0 will never exist.
 			ListID: 0,
-			ItemID: ts.items[0].ID,
+			ItemID: expectedItems[0].ID,
 			RequestBody: item.Item{
 				Name:     "Bar",
 				Quantity: 1,
@@ -301,7 +304,7 @@ func Test_updateItem(t *testing.T) {
 		},
 		{
 			Name:   "NotFoundItem",
-			ListID: ts.lists[0].ID,
+			ListID: expectedLists[0].ID,
 			// Using 0 for ItemID because postgres serial type starts at 1 so 0 will never exist.
 			ItemID: 0,
 			RequestBody: item.Item{
@@ -370,13 +373,10 @@ func Test_updateItem(t *testing.T) {
 }
 
 func Test_deleteItem(t *testing.T) {
-	// Test database needs reseeded after this test is ran because this test
-	// deletes items in the database.
-	defer func() {
-		if err := ts.reseedDatabase(); err != nil {
-			t.Errorf("error reseeding database: %v", err)
-		}
-	}()
+	expectedLists := testdb.SeedLists(t, ts.a.db)
+	expectedItems := testdb.SeedItems(t, ts.a.db, expectedLists)
+
+	defer testdb.Truncate(t, ts.a.db)
 
 	tests := []struct {
 		Name         string
@@ -386,13 +386,13 @@ func Test_deleteItem(t *testing.T) {
 	}{
 		{
 			Name:         "OK",
-			ListID:       ts.lists[0].ID,
-			ItemID:       ts.items[0].ID,
+			ListID:       expectedLists[0].ID,
+			ItemID:       expectedItems[0].ID,
 			ExpectedCode: http.StatusNoContent,
 		},
 		{
 			Name:   "NotFound",
-			ListID: ts.lists[0].ID,
+			ListID: expectedLists[0].ID,
 			// Using 0 for ItemID because postgres serial type starts at 1 so 0 will never exist.
 			ItemID:       0,
 			ExpectedCode: http.StatusNotFound,

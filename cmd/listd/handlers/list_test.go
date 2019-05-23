@@ -15,78 +15,68 @@ import (
 )
 
 func Test_getLists(t *testing.T) {
-	// Test database needs reseeded after this test is ran because this test
-	// removes lists from the database.
-	defer func() {
-		if err := ts.reseedDatabase(); err != nil {
-			t.Errorf("error reseeding database: %v", err)
+	// No Content (no seed data)
+	{
+		req, err := http.NewRequest(http.MethodGet, "/list", nil)
+		if err != nil {
+			t.Errorf("error creating request: %v", err)
 		}
-	}()
 
-	tests := []struct {
-		Name         string
-		ExpectedBody []list.List
-		ExpectedCode int
-	}{
-		{
-			Name:         "OK",
-			ExpectedBody: ts.lists,
-			ExpectedCode: http.StatusOK,
-		},
-		{
-			Name:         "NoContent",
-			ExpectedBody: []list.List{},
-			ExpectedCode: http.StatusOK,
-		},
+		w := httptest.NewRecorder()
+		ts.a.ServeHTTP(w, req)
+
+		if e, a := http.StatusOK, w.Code; e != a {
+			t.Errorf("expected status code: %v, got status code: %v", e, a)
+		}
+
+		var lists []list.List
+		resp := web.Response{
+			Results: &lists,
+		}
+
+		if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+			t.Errorf("error decoding response body: %v", err)
+		}
+
+		if len(lists) > 0 {
+			t.Errorf("expected no lists to be returned, got %v lists", len(lists))
+		}
 	}
 
-	for _, test := range tests {
-		// NoConent test needs to have lists removed from the database to be tested.
-		if test.Name == tests[1].Name {
-			if err := testdb.Truncate(ts.a.db); err != nil {
-				t.Errorf("error truncating database: %v", err)
-			}
+	// Ok (database has been seeded)
+	{
+		expectedLists := testdb.SeedLists(t, ts.a.db)
+		defer testdb.Truncate(t, ts.a.db)
+
+		req, err := http.NewRequest(http.MethodGet, "/list", nil)
+		if err != nil {
+			t.Errorf("error creating request: %v", err)
 		}
 
-		fn := func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodGet, "/list", nil)
-			if err != nil {
-				t.Errorf("error creating request: %v", err)
-			}
+		w := httptest.NewRecorder()
+		ts.a.ServeHTTP(w, req)
 
-			w := httptest.NewRecorder()
-			ts.a.ServeHTTP(w, req)
-
-			if e, a := test.ExpectedCode, w.Code; e != a {
-				t.Errorf("expected status code: %v, got status code: %v", e, a)
-			}
-
-			var lists []list.List
-			resp := web.Response{
-				Results: &lists,
-			}
-
-			if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
-				t.Errorf("error decoding response body: %v", err)
-			}
-
-			if d := cmp.Diff(test.ExpectedBody, lists); d != "" {
-				t.Errorf("unexpected difference in response body:\n%v", d)
-			}
+		if e, a := http.StatusOK, w.Code; e != a {
+			t.Errorf("expected status code: %v, got status code: %v", e, a)
 		}
 
-		t.Run(test.Name, fn)
+		var lists []list.List
+		resp := web.Response{
+			Results: &lists,
+		}
+
+		if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+			t.Errorf("error decoding response body: %v", err)
+		}
+
+		if d := cmp.Diff(expectedLists, lists); d != "" {
+			t.Errorf("unexpected difference in response body:\n%v", d)
+		}
 	}
 }
 
 func Test_createList(t *testing.T) {
-	// Test database needs reseeded after this test is ran because this test
-	// adds lists to the database.
-	defer func() {
-		if err := ts.reseedDatabase(); err != nil {
-			t.Errorf("error reseeding database: %v", err)
-		}
-	}()
+	defer testdb.Truncate(t, ts.a.db)
 
 	tests := []struct {
 		Name         string
@@ -160,6 +150,9 @@ func Test_createList(t *testing.T) {
 }
 
 func Test_getList(t *testing.T) {
+	expectedLists := testdb.SeedLists(t, ts.a.db)
+	defer testdb.Truncate(t, ts.a.db)
+
 	tests := []struct {
 		Name         string
 		ListID       int
@@ -168,8 +161,8 @@ func Test_getList(t *testing.T) {
 	}{
 		{
 			Name:         "OK",
-			ListID:       ts.lists[0].ID,
-			ExpectedBody: ts.lists[0],
+			ListID:       expectedLists[0].ID,
+			ExpectedBody: expectedLists[0],
 			ExpectedCode: http.StatusOK,
 		},
 		{
@@ -216,13 +209,8 @@ func Test_getList(t *testing.T) {
 }
 
 func Test_updateList(t *testing.T) {
-	// Test database needs reseeded after this test is ran because this test
-	// changes lists in the database.
-	defer func() {
-		if err := ts.reseedDatabase(); err != nil {
-			t.Errorf("error reseeding database: %v", err)
-		}
-	}()
+	expectedLists := testdb.SeedLists(t, ts.a.db)
+	defer testdb.Truncate(t, ts.a.db)
 
 	tests := []struct {
 		Name         string
@@ -232,7 +220,7 @@ func Test_updateList(t *testing.T) {
 	}{
 		{
 			Name:   "OK",
-			ListID: ts.lists[0].ID,
+			ListID: expectedLists[0].ID,
 			RequestBody: list.List{
 				Name: "Foo",
 			},
@@ -240,7 +228,7 @@ func Test_updateList(t *testing.T) {
 		},
 		{
 			Name:   "BreakUniqueNameConstraint",
-			ListID: ts.lists[1].ID,
+			ListID: expectedLists[1].ID,
 			RequestBody: list.List{
 				Name: "Foo",
 			},
@@ -248,7 +236,7 @@ func Test_updateList(t *testing.T) {
 		},
 		{
 			Name:         "NoName",
-			ListID:       ts.lists[0].ID,
+			ListID:       expectedLists[0].ID,
 			RequestBody:  list.List{},
 			ExpectedCode: http.StatusBadRequest,
 		},
@@ -309,13 +297,8 @@ func Test_updateList(t *testing.T) {
 }
 
 func Test_deleteList(t *testing.T) {
-	// Test database needs reseeded after this test is ran because this test
-	// deletes lists in the database.
-	defer func() {
-		if err := ts.reseedDatabase(); err != nil {
-			t.Errorf("error reseeding database: %v", err)
-		}
-	}()
+	expectedLists := testdb.SeedLists(t, ts.a.db)
+	defer testdb.Truncate(t, ts.a.db)
 
 	tests := []struct {
 		Name         string
@@ -324,7 +307,7 @@ func Test_deleteList(t *testing.T) {
 	}{
 		{
 			Name:         "OK",
-			ListID:       ts.lists[0].ID,
+			ListID:       expectedLists[0].ID,
 			ExpectedCode: http.StatusNoContent,
 		},
 		{
