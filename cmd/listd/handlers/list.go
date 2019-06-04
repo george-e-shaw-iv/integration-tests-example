@@ -15,8 +15,8 @@ import (
 )
 
 // getLists is a handler that retrieves all rows from the list table.
-func (a *Application) getLists(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	lists, err := list.SelectLists(a.db)
+func (a *Application) getLists(w http.ResponseWriter, r *http.Request) {
+	lists, err := list.SelectLists(a.DB)
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "select all lists"))
 		return
@@ -30,7 +30,7 @@ func (a *Application) getLists(w http.ResponseWriter, r *http.Request, _ httprou
 }
 
 // createList is a handler that inserts a new row into the list table.
-func (a *Application) createList(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (a *Application) createList(w http.ResponseWriter, r *http.Request) {
 	var payload list.List
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
@@ -43,7 +43,7 @@ func (a *Application) createList(w http.ResponseWriter, r *http.Request, _ httpr
 		return
 	}
 
-	l, err := list.CreateList(a.db, payload)
+	l, err := list.CreateList(a.DB, payload)
 	if err != nil {
 		if pgerr, ok := errors.Cause(err).(*pq.Error); ok {
 			if string(pgerr.Code) == db.PSQLErrUniqueConstraint {
@@ -61,14 +61,14 @@ func (a *Application) createList(w http.ResponseWriter, r *http.Request, _ httpr
 
 // getList is a handler that gets a single row from the list table using a given
 // list_id.
-func (a *Application) getList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	listID, err := strconv.Atoi(ps.ByName("lid"))
+func (a *Application) getList(w http.ResponseWriter, r *http.Request) {
+	listID, err := strconv.Atoi(httprouter.ParamsFromContext(r.Context()).ByName("lid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert list id to integer"))
 		return
 	}
 
-	l, err := list.SelectList(a.db, listID)
+	l, err := list.SelectList(a.DB, listID)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
@@ -84,8 +84,8 @@ func (a *Application) getList(w http.ResponseWriter, r *http.Request, ps httprou
 
 // updateList is a handler that updates a row from the list table using a given
 // list_id.
-func (a *Application) updateList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	listID, err := strconv.Atoi(ps.ByName("lid"))
+func (a *Application) updateList(w http.ResponseWriter, r *http.Request) {
+	listID, err := strconv.Atoi(httprouter.ParamsFromContext(r.Context()).ByName("lid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert list id to integer"))
 		return
@@ -104,7 +104,7 @@ func (a *Application) updateList(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	if err := list.UpdateList(a.db, payload); err != nil {
+	if err := list.UpdateList(a.DB, payload); err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
 			return
@@ -126,14 +126,14 @@ func (a *Application) updateList(w http.ResponseWriter, r *http.Request, ps http
 
 // deleteList is a handler that deletes a row from the list table using a given
 // list_id.
-func (a *Application) deleteList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	listID, err := strconv.Atoi(ps.ByName("lid"))
+func (a *Application) deleteList(w http.ResponseWriter, r *http.Request) {
+	listID, err := strconv.Atoi(httprouter.ParamsFromContext(r.Context()).ByName("lid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert list id to integer"))
 		return
 	}
 
-	if err := list.DeleteList(a.db, listID); err != nil {
+	if err := list.DeleteList(a.DB, listID); err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
 			return

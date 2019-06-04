@@ -7,41 +7,63 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
-	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/configuration"
 	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/handlers"
 	"github.com/george-e-shaw-iv/integration-tests-example/internal/platform/db"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	var mainErr error
+	var err error
 	defer func() {
-		if mainErr != nil {
+		if err != nil {
 			log.WithFields(log.Fields{
-				"error": mainErr,
+				"error": err,
 			}).Error("error in main")
 
 			os.Exit(1)
 		}
 	}()
 
-	cfg, err := configuration.Environment()
-	if err != nil {
-		mainErr = errors.Wrap(err, "gather env variables")
+	// cfg is the struct type that contains fields that stores the necessary configuration
+	// gathered from the environment.
+	var cfg struct {
+		DaemonPort int `envconfig:"DAEMON_PORT" default:"3000"`
+
+		DBUser string `envconfig:"DB_USER" default:"root"`
+		DBPass string `envconfig:"DB_PASS" default:"root"`
+		DBName string `envconfig:"DB_NAME" default:"list"`
+		DBHost string `envconfig:"DB_USER" default:"db"`
+		DBPort int    `envconfig:"DB_USER" default:"5432"`
+
+		ReadTimeout     time.Duration `envconfig:"READ_TIMEOUT" default:"5s"`
+		WriteTimeout    time.Duration `envconfig:"WRITE_TIMEOUT" default:"10s"`
+		ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"5s"`
+	}
+	if err := envconfig.Process("LIST", &cfg); err != nil {
+		err = errors.Wrap(err, "parse environment variables")
 		return
 	}
 
-	dbc, err := db.NewConnection(cfg)
+	dbCfg := db.Config{
+		User: cfg.DBUser,
+		Pass: cfg.DBPass,
+		Name: cfg.DBName,
+		Host: cfg.DBHost,
+		Port: cfg.DBPort,
+	}
+	dbc, err := db.NewConnection(dbCfg)
 	if err != nil {
-		mainErr = errors.Wrap(err, "connect to postgres db")
+		err = errors.Wrap(err, "connect to postgres db")
 		return
 	}
 
 	server := http.Server{
 		Addr:           fmt.Sprintf(":%d", cfg.DaemonPort),
-		Handler:        handlers.NewApplication(dbc, cfg),
+		Handler:        handlers.NewApplication(dbc),
 		ReadTimeout:    cfg.ReadTimeout,
 		WriteTimeout:   cfg.WriteTimeout,
 		MaxHeaderBytes: 1 << 20,
@@ -62,7 +84,7 @@ func main() {
 	// Waiting for an osSignal or a non-HTTP related server error.
 	select {
 	case e := <-serverErrors:
-		mainErr = fmt.Errorf("server failed to start: %+v", e)
+		err = fmt.Errorf("server failed to start: %+v", e)
 		return
 
 	case <-osSignals:

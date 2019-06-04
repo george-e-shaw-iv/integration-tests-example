@@ -13,14 +13,14 @@ import (
 )
 
 // getItems is a handler that returns all rows from the item table.
-func (a *Application) getItems(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	listID, err := strconv.Atoi(ps.ByName("lid"))
+func (a *Application) getItems(w http.ResponseWriter, r *http.Request) {
+	listID, err := strconv.Atoi(httprouter.ParamsFromContext(r.Context()).ByName("lid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert list id to integer"))
 		return
 	}
 
-	items, err := item.SelectItems(a.db, listID)
+	items, err := item.SelectItems(a.DB, listID)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
@@ -39,8 +39,8 @@ func (a *Application) getItems(w http.ResponseWriter, r *http.Request, ps httpro
 }
 
 // getItems is a handler that creates a new row in the item table.
-func (a *Application) createItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	listID, err := strconv.Atoi(ps.ByName("lid"))
+func (a *Application) createItem(w http.ResponseWriter, r *http.Request) {
+	listID, err := strconv.Atoi(httprouter.ParamsFromContext(r.Context()).ByName("lid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert list id to integer"))
 		return
@@ -64,7 +64,7 @@ func (a *Application) createItem(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	i, err := item.CreateItem(a.db, payload)
+	i, err := item.CreateItem(a.DB, payload)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
@@ -80,20 +80,20 @@ func (a *Application) createItem(w http.ResponseWriter, r *http.Request, ps http
 
 // getItem is a handler that returns a row from the item table based off of the lid and iid URL
 // parameters.
-func (a *Application) getItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	listID, err := strconv.Atoi(ps.ByName("lid"))
+func (a *Application) getItem(w http.ResponseWriter, r *http.Request) {
+	listID, err := strconv.Atoi(httprouter.ParamsFromContext(r.Context()).ByName("lid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert list id to integer"))
 		return
 	}
 
-	itemID, err := strconv.Atoi(ps.ByName("iid"))
+	itemID, err := strconv.Atoi(httprouter.ParamsFromContext(r.Context()).ByName("iid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert item id to integer"))
 		return
 	}
 
-	i, err := item.SelectItem(a.db, itemID, listID)
+	i, err := item.SelectItem(a.DB, itemID, listID)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
@@ -109,14 +109,14 @@ func (a *Application) getItem(w http.ResponseWriter, r *http.Request, ps httprou
 
 // getItem is a handler that updates a row from the item table based off of the lid and iid URL
 // parameters as well as a given payload.
-func (a *Application) updateItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	listID, err := strconv.Atoi(ps.ByName("lid"))
+func (a *Application) updateItem(w http.ResponseWriter, r *http.Request) {
+	listID, err := strconv.Atoi(httprouter.ParamsFromContext(r.Context()).ByName("lid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert list id to integer"))
 		return
 	}
 
-	itemID, err := strconv.Atoi(ps.ByName("iid"))
+	itemID, err := strconv.Atoi(httprouter.ParamsFromContext(r.Context()).ByName("iid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert item id to integer"))
 		return
@@ -141,7 +141,7 @@ func (a *Application) updateItem(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	if err = item.UpdateItem(a.db, payload); err != nil {
+	if err = item.UpdateItem(a.DB, payload); err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
 			return
@@ -156,20 +156,20 @@ func (a *Application) updateItem(w http.ResponseWriter, r *http.Request, ps http
 
 // getItem is a handler that deletes a row from the item table based off of the lid and iid URL
 // parameters.
-func (a *Application) deleteItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	listID, err := strconv.Atoi(ps.ByName("lid"))
+func (a *Application) deleteItem(w http.ResponseWriter, r *http.Request) {
+	listID, err := strconv.Atoi(httprouter.ParamsFromContext(r.Context()).ByName("lid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert list id to integer"))
 		return
 	}
 
-	itemID, err := strconv.Atoi(ps.ByName("iid"))
+	itemID, err := strconv.Atoi(httprouter.ParamsFromContext(r.Context()).ByName("iid"))
 	if err != nil {
 		web.RespondError(w, r, http.StatusInternalServerError, errors.Wrap(err, "convert item id to integer"))
 		return
 	}
 
-	if err = item.DeleteItem(a.db, itemID, listID); err != nil {
+	if err = item.DeleteItem(a.DB, itemID, listID); err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			web.RespondError(w, r, http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
 			return

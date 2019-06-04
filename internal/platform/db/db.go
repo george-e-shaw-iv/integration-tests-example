@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/george-e-shaw-iv/integration-tests-example/cmd/listd/configuration"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -17,14 +16,22 @@ var (
 	PSQLErrUniqueConstraint = "23505"
 )
 
+type Config struct {
+	User string
+	Pass string
+	Name string
+	Host string
+	Port int
+}
+
 // NewConnection returns a new database connection with the schema applied, if not already
 // applied.
-func NewConnection(cfg *configuration.Config) (*sqlx.DB, error) {
+func NewConnection(cfg Config) (*sqlx.DB, error) {
 	var db *sqlx.DB
 	var err error
 
 	conn := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%d sslmode=disable",
-		cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost, cfg.DBPort)
+		cfg.User, cfg.Pass, cfg.Name, cfg.Host, cfg.Port)
 
 	log.Info("connecting to postgres database...")
 	if db, err = sqlx.Connect("postgres", conn); err != nil {

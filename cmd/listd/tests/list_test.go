@@ -1,4 +1,4 @@
-package handlers
+package tests
 
 import (
 	"bytes"
@@ -23,7 +23,7 @@ func Test_getLists(t *testing.T) {
 		}
 
 		w := httptest.NewRecorder()
-		ts.a.ServeHTTP(w, req)
+		a.ServeHTTP(w, req)
 
 		if e, a := http.StatusOK, w.Code; e != a {
 			t.Errorf("expected status code: %v, got status code: %v", e, a)
@@ -45,8 +45,16 @@ func Test_getLists(t *testing.T) {
 
 	// Ok (database has been seeded)
 	{
-		expectedLists := testdb.SeedLists(t, ts.a.db)
-		defer testdb.Truncate(t, ts.a.db)
+		expectedLists, err := testdb.SeedLists(a.DB)
+		if err != nil {
+			t.Fatalf("error seeding lists: %v", err)
+		}
+
+		defer func() {
+			if err := testdb.Truncate(a.DB); err != nil {
+				t.Errorf("error truncating test database tables: %v", err)
+			}
+		}()
 
 		req, err := http.NewRequest(http.MethodGet, "/list", nil)
 		if err != nil {
@@ -54,7 +62,7 @@ func Test_getLists(t *testing.T) {
 		}
 
 		w := httptest.NewRecorder()
-		ts.a.ServeHTTP(w, req)
+		a.ServeHTTP(w, req)
 
 		if e, a := http.StatusOK, w.Code; e != a {
 			t.Errorf("expected status code: %v, got status code: %v", e, a)
@@ -76,7 +84,11 @@ func Test_getLists(t *testing.T) {
 }
 
 func Test_createList(t *testing.T) {
-	defer testdb.Truncate(t, ts.a.db)
+	defer func() {
+		if err := testdb.Truncate(a.DB); err != nil {
+			t.Errorf("error truncating test database tables: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		Name         string
@@ -123,7 +135,7 @@ func Test_createList(t *testing.T) {
 			}()
 
 			w := httptest.NewRecorder()
-			ts.a.ServeHTTP(w, req)
+			a.ServeHTTP(w, req)
 
 			if e, a := test.ExpectedCode, w.Code; e != a {
 				t.Errorf("expected status code: %v, got status code: %v", e, a)
@@ -150,8 +162,16 @@ func Test_createList(t *testing.T) {
 }
 
 func Test_getList(t *testing.T) {
-	expectedLists := testdb.SeedLists(t, ts.a.db)
-	defer testdb.Truncate(t, ts.a.db)
+	expectedLists, err := testdb.SeedLists(a.DB)
+	if err != nil {
+		t.Fatalf("error seeding lists: %v", err)
+	}
+
+	defer func() {
+		if err := testdb.Truncate(a.DB); err != nil {
+			t.Errorf("error truncating test database tables: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		Name         string
@@ -182,7 +202,7 @@ func Test_getList(t *testing.T) {
 			}
 
 			w := httptest.NewRecorder()
-			ts.a.ServeHTTP(w, req)
+			a.ServeHTTP(w, req)
 
 			if e, a := test.ExpectedCode, w.Code; e != a {
 				t.Errorf("expected status code: %v, got status code: %v", e, a)
@@ -209,8 +229,16 @@ func Test_getList(t *testing.T) {
 }
 
 func Test_updateList(t *testing.T) {
-	expectedLists := testdb.SeedLists(t, ts.a.db)
-	defer testdb.Truncate(t, ts.a.db)
+	expectedLists, err := testdb.SeedLists(a.DB)
+	if err != nil {
+		t.Fatalf("error seeding lists: %v", err)
+	}
+
+	defer func() {
+		if err := testdb.Truncate(a.DB); err != nil {
+			t.Errorf("error truncating test database tables: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		Name         string
@@ -270,7 +298,7 @@ func Test_updateList(t *testing.T) {
 			}()
 
 			w := httptest.NewRecorder()
-			ts.a.ServeHTTP(w, req)
+			a.ServeHTTP(w, req)
 
 			if e, a := test.ExpectedCode, w.Code; e != a {
 				t.Errorf("expected status code: %v, got status code: %v", e, a)
@@ -297,8 +325,16 @@ func Test_updateList(t *testing.T) {
 }
 
 func Test_deleteList(t *testing.T) {
-	expectedLists := testdb.SeedLists(t, ts.a.db)
-	defer testdb.Truncate(t, ts.a.db)
+	expectedLists, err := testdb.SeedLists(a.DB)
+	if err != nil {
+		t.Fatalf("error seeding lists: %v", err)
+	}
+
+	defer func() {
+		if err := testdb.Truncate(a.DB); err != nil {
+			t.Errorf("error truncating test database tables: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		Name         string
@@ -326,7 +362,7 @@ func Test_deleteList(t *testing.T) {
 			}
 
 			w := httptest.NewRecorder()
-			ts.a.ServeHTTP(w, req)
+			a.ServeHTTP(w, req)
 
 			if e, a := test.ExpectedCode, w.Code; e != a {
 				t.Errorf("expected status code: %v, got status code: %v", e, a)
