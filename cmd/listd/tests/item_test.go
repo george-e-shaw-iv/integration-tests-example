@@ -15,6 +15,12 @@ import (
 )
 
 func Test_getItems(t *testing.T) {
+	defer func() {
+		if err := testdb.Truncate(a.DB); err != nil {
+			t.Errorf("error truncating test database tables: %v", err)
+		}
+	}()
+
 	expectedLists, err := testdb.SeedLists(a.DB)
 	if err != nil {
 		t.Fatalf("error seeding lists: %v", err)
@@ -24,12 +30,6 @@ func Test_getItems(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error seeding items: %v", err)
 	}
-
-	defer func() {
-		if err := testdb.Truncate(a.DB); err != nil {
-			t.Errorf("error truncating test database tables: %v", err)
-		}
-	}()
 
 	tests := []struct {
 		Name         string
@@ -96,16 +96,16 @@ func Test_getItems(t *testing.T) {
 }
 
 func Test_createItem(t *testing.T) {
-	expectedLists, err := testdb.SeedLists(a.DB)
-	if err != nil {
-		t.Fatalf("error seeding lists: %v", err)
-	}
-
 	defer func() {
 		if err := testdb.Truncate(a.DB); err != nil {
 			t.Errorf("error truncating test database tables: %v", err)
 		}
 	}()
+
+	expectedLists, err := testdb.SeedLists(a.DB)
+	if err != nil {
+		t.Fatalf("error seeding lists: %v", err)
+	}
 
 	tests := []struct {
 		Name         string
@@ -205,6 +205,12 @@ func Test_createItem(t *testing.T) {
 }
 
 func Test_getItem(t *testing.T) {
+	defer func() {
+		if err := testdb.Truncate(a.DB); err != nil {
+			t.Errorf("error truncating test database tables: %v", err)
+		}
+	}()
+
 	expectedLists, err := testdb.SeedLists(a.DB)
 	if err != nil {
 		t.Fatalf("error seeding lists: %v", err)
@@ -214,12 +220,6 @@ func Test_getItem(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error seeding items: %v", err)
 	}
-
-	defer func() {
-		if err := testdb.Truncate(a.DB); err != nil {
-			t.Errorf("error truncating test database tables: %v", err)
-		}
-	}()
 
 	tests := []struct {
 		Name         string
@@ -280,6 +280,12 @@ func Test_getItem(t *testing.T) {
 }
 
 func Test_updateItem(t *testing.T) {
+	defer func() {
+		if err := testdb.Truncate(a.DB); err != nil {
+			t.Errorf("error truncating test database tables: %v", err)
+		}
+	}()
+
 	expectedLists, err := testdb.SeedLists(a.DB)
 	if err != nil {
 		t.Fatalf("error seeding lists: %v", err)
@@ -289,12 +295,6 @@ func Test_updateItem(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error seeding items: %v", err)
 	}
-
-	defer func() {
-		if err := testdb.Truncate(a.DB); err != nil {
-			t.Errorf("error truncating test database tables: %v", err)
-		}
-	}()
 
 	tests := []struct {
 		Name         string
@@ -414,6 +414,12 @@ func Test_updateItem(t *testing.T) {
 }
 
 func Test_deleteItem(t *testing.T) {
+	defer func() {
+		if err := testdb.Truncate(a.DB); err != nil {
+			t.Errorf("error truncating test database tables: %v", err)
+		}
+	}()
+
 	expectedLists, err := testdb.SeedLists(a.DB)
 	if err != nil {
 		t.Fatalf("error seeding lists: %v", err)
@@ -423,12 +429,6 @@ func Test_deleteItem(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error seeding items: %v", err)
 	}
-
-	defer func() {
-		if err := testdb.Truncate(a.DB); err != nil {
-			t.Errorf("error truncating test database tables: %v", err)
-		}
-	}()
 
 	tests := []struct {
 		Name         string

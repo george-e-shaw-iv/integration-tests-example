@@ -45,16 +45,16 @@ func Test_getLists(t *testing.T) {
 
 	// Ok (database has been seeded)
 	{
-		expectedLists, err := testdb.SeedLists(a.DB)
-		if err != nil {
-			t.Fatalf("error seeding lists: %v", err)
-		}
-
 		defer func() {
 			if err := testdb.Truncate(a.DB); err != nil {
 				t.Errorf("error truncating test database tables: %v", err)
 			}
 		}()
+
+		expectedLists, err := testdb.SeedLists(a.DB)
+		if err != nil {
+			t.Fatalf("error seeding lists: %v", err)
+		}
 
 		req, err := http.NewRequest(http.MethodGet, "/list", nil)
 		if err != nil {
@@ -162,16 +162,16 @@ func Test_createList(t *testing.T) {
 }
 
 func Test_getList(t *testing.T) {
-	expectedLists, err := testdb.SeedLists(a.DB)
-	if err != nil {
-		t.Fatalf("error seeding lists: %v", err)
-	}
-
 	defer func() {
 		if err := testdb.Truncate(a.DB); err != nil {
 			t.Errorf("error truncating test database tables: %v", err)
 		}
 	}()
+
+	expectedLists, err := testdb.SeedLists(a.DB)
+	if err != nil {
+		t.Fatalf("error seeding lists: %v", err)
+	}
 
 	tests := []struct {
 		Name         string
@@ -229,16 +229,16 @@ func Test_getList(t *testing.T) {
 }
 
 func Test_updateList(t *testing.T) {
-	expectedLists, err := testdb.SeedLists(a.DB)
-	if err != nil {
-		t.Fatalf("error seeding lists: %v", err)
-	}
-
 	defer func() {
 		if err := testdb.Truncate(a.DB); err != nil {
 			t.Errorf("error truncating test database tables: %v", err)
 		}
 	}()
+
+	expectedLists, err := testdb.SeedLists(a.DB)
+	if err != nil {
+		t.Fatalf("error seeding lists: %v", err)
+	}
 
 	tests := []struct {
 		Name         string
@@ -325,16 +325,16 @@ func Test_updateList(t *testing.T) {
 }
 
 func Test_deleteList(t *testing.T) {
-	expectedLists, err := testdb.SeedLists(a.DB)
-	if err != nil {
-		t.Fatalf("error seeding lists: %v", err)
-	}
-
 	defer func() {
 		if err := testdb.Truncate(a.DB); err != nil {
 			t.Errorf("error truncating test database tables: %v", err)
 		}
 	}()
+
+	expectedLists, err := testdb.SeedLists(a.DB)
+	if err != nil {
+		t.Fatalf("error seeding lists: %v", err)
+	}
 
 	tests := []struct {
 		Name         string

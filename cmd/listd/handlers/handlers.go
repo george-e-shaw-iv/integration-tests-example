@@ -11,8 +11,13 @@ import (
 // Application is the struct that contains the server handler as well as
 // any references to services that the application needs.
 type Application struct {
-	http.Handler
-	DB *sqlx.DB
+	DB      *sqlx.DB
+	handler http.Handler
+}
+
+// ServeHTTP implements the http.Handler interface for the Application type.
+func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	a.handler.ServeHTTP(w, r)
 }
 
 // NewApplication returns a new pointer to Application with route definitions
@@ -22,7 +27,7 @@ func NewApplication(db *sqlx.DB) *Application {
 		DB: db,
 	}
 
-	r := httprouter.New()
+	router := httprouter.New()
 
 	probeHandler := func(w http.ResponseWriter, r *http.Request) {
 		if err := a.DB.Ping(); err == nil {
@@ -40,25 +45,26 @@ func NewApplication(db *sqlx.DB) *Application {
 	}
 
 	// Kubernetes Probes
-	r.HandlerFunc(http.MethodGet, "/ready", probeHandler)
-	r.HandlerFunc(http.MethodGet, "/healthy", probeHandler)
+	router.HandlerFunc(http.MethodGet, "/ready", probeHandler)
+	router.HandlerFunc(http.MethodGet, "/healthy", probeHandler)
 
 	// List Routes
-	r.HandlerFunc(http.MethodGet, "/list", a.getLists)
-	r.HandlerFunc(http.MethodPost, "/list", a.createList)
-	r.HandlerFunc(http.MethodGet, "/list/:lid", a.getList)
-	r.HandlerFunc(http.MethodPut, "/list/:lid", a.updateList)
-	r.HandlerFunc(http.MethodDelete, "/list/:lid", a.deleteList)
+	router.HandlerFunc(http.MethodGet, "/list", a.getLists)
+	router.HandlerFunc(http.MethodPost, "/list", a.createList)
+	router.HandlerFunc(http.MethodGet, "/list/:lid", a.getList)
+	router.HandlerFunc(http.MethodPut, "/list/:lid", a.updateList)
+	router.HandlerFunc(http.MethodDelete, "/list/:lid", a.deleteList)
 
 	// Item Routes
-	r.HandlerFunc(http.MethodGet, "/list/:lid/item", a.getItems)
-	r.HandlerFunc(http.MethodPost, "/list/:lid/item", a.createItem)
-	r.HandlerFunc(http.MethodGet, "/list/:lid/item/:iid", a.getItem)
-	r.HandlerFunc(http.MethodPut, "/list/:lid/item/:iid", a.updateItem)
-	r.HandlerFunc(http.MethodDelete, "/list/:lid/item/:iid", a.deleteItem)
+	router.HandlerFunc(http.MethodGet, "/list/:lid/item", a.getItems)
+	router.HandlerFunc(http.MethodPost, "/list/:lid/item", a.createItem)
+	router.HandlerFunc(http.MethodGet, "/list/:lid/item/:iid", a.getItem)
+	router.HandlerFunc(http.MethodPut, "/list/:lid/item/:iid", a.updateItem)
+	router.HandlerFunc(http.MethodDelete, "/list/:lid/item/:iid", a.deleteItem)
 
-	// Wrap the embedded handler in global middleware for logging
-	a.Handler = web.RequestMW(r)
+	// Wrap the router in middleware used for logging requests and set the application
+	// handler to utilize the returned http.Handler from RequestMW.
+	a.handler = web.RequestMW(router)
 
 	return &a
 }
