@@ -78,7 +78,7 @@ func Test_getItems(t *testing.T) {
 			if test.ExpectedBody != nil {
 				var items []item.Item
 				resp := web.Response{
-					Results: &items,
+					Results: items,
 				}
 
 				if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
@@ -179,7 +179,7 @@ func Test_createItem(t *testing.T) {
 			if test.ExpectedCode == http.StatusCreated {
 				var i item.Item
 				resp := web.Response{
-					Results: &i,
+					Results: i,
 				}
 
 				if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
@@ -262,7 +262,7 @@ func Test_getItem(t *testing.T) {
 			if test.ExpectedCode != http.StatusNotFound {
 				var i item.Item
 				resp := web.Response{
-					Results: &i,
+					Results: i,
 				}
 
 				if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
@@ -384,7 +384,7 @@ func Test_updateItem(t *testing.T) {
 			if test.ExpectedCode == http.StatusOK {
 				var i item.Item
 				resp := web.Response{
-					Results: &i,
+					Results: i,
 				}
 
 				if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {

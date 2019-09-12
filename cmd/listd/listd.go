@@ -61,6 +61,12 @@ func main() {
 		return
 	}
 
+	defer func(){
+		if err := dbc.Close(); err != nil {
+			log.Printf("error closing database: %v", err)
+		}
+	}()
+
 	server := http.Server{
 		Addr:           fmt.Sprintf(":%d", cfg.DaemonPort),
 		Handler:        handlers.NewApplication(dbc),
@@ -90,11 +96,7 @@ func main() {
 	case <-osSignals:
 	}
 
-	// Clean-up integrated services and gracefully shutdown server.
-	if err := dbc.Close(); err != nil {
-		log.Printf("error closing database: %v", err)
-	}
-
+	// Gracefully shutdown server once an exit signal or error is received.
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancel()
 

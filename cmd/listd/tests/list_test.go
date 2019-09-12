@@ -70,7 +70,7 @@ func Test_getLists(t *testing.T) {
 
 		var lists []list.List
 		resp := web.Response{
-			Results: &lists,
+			Results: lists,
 		}
 
 		if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
@@ -144,7 +144,7 @@ func Test_createList(t *testing.T) {
 			if test.ExpectedCode != http.StatusBadRequest {
 				var l list.List
 				resp := web.Response{
-					Results: &l,
+					Results: l,
 				}
 
 				if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
@@ -211,7 +211,7 @@ func Test_getList(t *testing.T) {
 			if test.ExpectedCode != http.StatusNotFound {
 				var l list.List
 				resp := web.Response{
-					Results: &l,
+					Results: l,
 				}
 
 				if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
@@ -307,7 +307,7 @@ func Test_updateList(t *testing.T) {
 			if test.ExpectedCode == http.StatusOK {
 				var l list.List
 				resp := web.Response{
-					Results: &l,
+					Results: l,
 				}
 
 				if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
