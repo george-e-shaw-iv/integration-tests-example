@@ -36,8 +36,8 @@ func main() {
 		DBUser string `envconfig:"DB_USER" default:"root"`
 		DBPass string `envconfig:"DB_PASS" default:"root"`
 		DBName string `envconfig:"DB_NAME" default:"list"`
-		DBHost string `envconfig:"DB_USER" default:"db"`
-		DBPort int    `envconfig:"DB_USER" default:"5432"`
+		DBHost string `envconfig:"DB_HOST" default:"db"`
+		DBPort int    `envconfig:"DB_PORT" default:"5432"`
 
 		ReadTimeout     time.Duration `envconfig:"READ_TIMEOUT" default:"5s"`
 		WriteTimeout    time.Duration `envconfig:"WRITE_TIMEOUT" default:"10s"`
